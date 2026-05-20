@@ -1,0 +1,271 @@
+# Software Wiki — Schema
+
+Este arquivo define como o LLM deve manter a wiki deste projeto de software. Leia este arquivo no início de cada sessão antes de qualquer operação na wiki.
+
+## Visão Geral
+
+Esta wiki é um artefato vivo e persistente. Você (o LLM) é o único responsável por escrever e manter os arquivos da wiki. O humano é responsável por fornecer fontes (requisitos, decisões, transcrições, specs), fazer perguntas e direcionar o foco.
+
+A wiki fica em `wiki/`. As fontes brutas ficam em `raw/`. Você lê ambas, mas **nunca modifica `raw/`**.
+
+---
+
+## Estrutura de Diretórios
+
+```
+doc-wiki-ai/
+├── CLAUDE.md                  ← este arquivo (schema)
+├── wiki/
+│   ├── index.md               ← índice central de todo o conteúdo
+│   ├── log.md                 ← log cronológico append-only
+│   ├── overview.md            ← visão geral e estado atual do projeto
+│   ├── features/              ← uma página por feature
+│   ├── requirements/          ← páginas de requisitos funcionais e não-funcionais
+│   ├── architecture/          ← decisões arquiteturais, diagramas, ADRs
+│   ├── entities/              ← entidades de domínio (modelos, schemas, glossário)
+│   └── decisions/             ← ADRs (Architecture Decision Records)
+└── raw/
+    ├── requirements/          ← documentos brutos de requisitos
+    ├── meetings/              ← transcrições de reuniões
+    ├── research/              ← pesquisas, benchmarks, referências externas
+    └── assets/                ← imagens, diagramas brutos
+```
+
+---
+
+## Tipos de Páginas e Templates
+
+### Feature (`wiki/features/<slug>.md`)
+
+```markdown
+---
+title: <Nome da Feature>
+status: backlog | in-progress | done | deprecated
+priority: high | medium | low
+area: <módulo ou domínio>
+requirements: [<req-slug>, ...]
+decisions: [<adr-slug>, ...]
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+
+# <Nome da Feature>
+
+## Descrição
+O que essa feature faz e por que existe.
+
+## Requisitos Relacionados
+Links para páginas de requisitos que motivam essa feature.
+
+## Comportamento Esperado
+Descrição funcional: entradas, saídas, regras de negócio.
+
+## Critérios de Aceite
+- [ ] Critério 1
+- [ ] Critério 2
+
+## Guia de Implementação
+Orientações técnicas, padrões a seguir, armadilhas conhecidas.
+
+## Entidades Envolvidas
+Links para entidades de domínio relevantes.
+
+## Decisões Arquiteturais
+Links para ADRs que afetam esta feature.
+
+## Dependências
+- Features que devem existir antes desta
+- Serviços externos envolvidos
+
+## Notas
+Contexto adicional, histórico de mudanças relevantes.
+```
+
+---
+
+### Requisito (`wiki/requirements/<slug>.md`)
+
+```markdown
+---
+title: <Nome do Requisito>
+type: functional | non-functional
+status: active | deprecated | superseded
+source: <arquivo em raw/ ou reunião>
+features: [<feature-slug>, ...]
+created: YYYY-MM-DD
+---
+
+# <Nome do Requisito>
+
+## Descrição
+O que o sistema deve fazer ou como deve se comportar.
+
+## Motivação
+Por que esse requisito existe. Qual problema resolve.
+
+## Critérios de Verificação
+Como saber se o requisito está satisfeito.
+
+## Features que Implementam
+Links para features que cobrem este requisito.
+
+## Conflitos / Tensões
+Outros requisitos que entram em tensão com este.
+
+## Histórico
+Mudanças relevantes ao longo do tempo.
+```
+
+---
+
+### Entidade de Domínio (`wiki/entities/<slug>.md`)
+
+```markdown
+---
+title: <Nome da Entidade>
+type: model | service | concept | external
+area: <módulo>
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+
+# <Nome da Entidade>
+
+## Descrição
+O que é esta entidade e seu papel no sistema.
+
+## Atributos / Schema
+Campos principais com tipos e descrições.
+
+## Relações
+Como se relaciona com outras entidades.
+
+## Regras de Negócio
+Invariantes e restrições associadas.
+
+## Usada Por
+Features e requisitos que dependem desta entidade.
+```
+
+---
+
+### ADR (`wiki/decisions/<slug>.md`)
+
+```markdown
+---
+title: <Título da Decisão>
+status: proposed | accepted | deprecated | superseded
+date: YYYY-MM-DD
+supersedes: <adr-slug ou null>
+---
+
+# ADR: <Título>
+
+## Contexto
+Qual problema ou situação motivou a decisão.
+
+## Opções Consideradas
+1. Opção A — prós/contras
+2. Opção B — prós/contras
+
+## Decisão
+O que foi decidido e por quê.
+
+## Consequências
+O que muda, o que fica mais fácil, o que fica mais difícil.
+
+## Features Afetadas
+Links para features que dependem desta decisão.
+```
+
+---
+
+## Workflows
+
+### 1. Ingestão de Nova Fonte
+
+Quando o humano adiciona um arquivo em `raw/` e pede para processar:
+
+1. Leia o arquivo fonte em `raw/`.
+2. Discuta com o humano os pontos principais.
+3. Identifique: novos requisitos, novas features, novas entidades, decisões arquiteturais.
+4. Crie ou atualize as páginas relevantes na wiki.
+5. Atualize `wiki/index.md` com as páginas novas/modificadas.
+6. Atualize `wiki/overview.md` se o estado do projeto mudou.
+7. Registre no `wiki/log.md`:
+   ```
+   ## [YYYY-MM-DD] ingest | <nome do arquivo>
+   Arquivos criados/atualizados: lista de paths. Resumo do que foi extraído.
+   ```
+
+### 2. Nova Feature
+
+Quando o humano descreve uma feature nova:
+
+1. Verifique se já existe uma página próxima em `wiki/features/`.
+2. Crie `wiki/features/<slug>.md` usando o template acima.
+3. Vincule aos requisitos existentes ou crie novos requisitos se necessário.
+4. Vincule às entidades de domínio envolvidas.
+5. Se houver decisão arquitetural implícita, crie um ADR.
+6. Atualize `wiki/index.md` e `wiki/overview.md`.
+7. Registre no log.
+
+### 3. Query / Pergunta
+
+Quando o humano faz uma pergunta sobre o projeto:
+
+1. Leia `wiki/index.md` para encontrar páginas relevantes.
+2. Leia as páginas identificadas.
+3. Responda com citações (`[[feature-slug]]`, `[[req-slug]]`, etc.).
+4. Se a resposta for valiosa (comparação, análise, síntese), pergunte se deve salvar como nova página wiki.
+5. Registre no log:
+   ```
+   ## [YYYY-MM-DD] query | <resumo da pergunta>
+   Páginas consultadas: lista. Resposta salva em: <path ou "não salva">.
+   ```
+
+### 4. Lint / Saúde da Wiki
+
+Periodicamente ou quando solicitado:
+
+1. Verifique páginas órfãs (sem links de entrada).
+2. Verifique features sem requisitos vinculados.
+3. Verifique requisitos sem features que os implementam.
+4. Verifique entidades mencionadas em texto mas sem página própria.
+5. Verifique features `in-progress` sem guia de implementação preenchida.
+6. Registre no log:
+   ```
+   ## [YYYY-MM-DD] lint
+   Problemas encontrados: lista. Ações tomadas: lista.
+   ```
+
+---
+
+## Convenções de Nomenclatura
+
+- **Slugs**: `kebab-case`, descritivos, sem números arbitrários.
+  - Feature: `user-authentication`, `export-pdf-report`
+  - Requisito: `req-multi-tenancy`, `req-offline-support`
+  - Entidade: `user`, `project`, `invoice`
+  - ADR: `adr-use-postgresql`, `adr-event-driven-arch`
+- **Links internos**: use `[[slug]]` no corpo do texto para referenciar outras páginas.
+- **Status de features**: sempre mantenha `status` atualizado no frontmatter.
+- **Datas**: sempre `YYYY-MM-DD`.
+
+---
+
+## Convenções de Links
+
+Ao mencionar qualquer entidade, feature, requisito ou ADR em qualquer página, crie um link `[[slug]]`. Isso permite que o índice e o grafo de links permaneçam úteis.
+
+Exemplo: "Esta feature depende de [[user-authentication]] e usa a entidade [[invoice]]."
+
+---
+
+## Regras Gerais
+
+- Você nunca escreve em `raw/`. Apenas lê.
+- Você sempre atualiza `wiki/index.md` e `wiki/log.md` após qualquer operação.
+- Quando uma claim em uma página contradiz uma informação nova, marque a contradição explicitamente antes de resolver.
+- Prefira atualizar páginas existentes a criar duplicatas. Verifique o índice antes de criar algo novo.
+- Mantenha `wiki/overview.md` como a visão de mais alto nível — alguém novo no projeto deve conseguir entender o escopo lendo só este arquivo.
