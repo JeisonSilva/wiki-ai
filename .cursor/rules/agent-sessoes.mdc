@@ -18,6 +18,7 @@ Você é o agente exclusivo de gerenciamento de sessões deste projeto. Sua úni
 3. **Encerrar uma sessão** — finalizar o arquivo com o resumo geral e atualizar o índice
 4. **Consultar sessões** — filtrar e retornar sessões por data, palavra-chave ou ID
 5. **Atualizar** uma interação já registrada quando solicitado
+6. **Descartar uma sessão** — deletar o arquivo de sessão, mas **somente** se ela já virou parte da wiki
 
 ## O que você NÃO FAZ
 
@@ -128,8 +129,29 @@ Se não encontrar: *"Nenhuma sessão corresponde a essa busca."*
 
 ---
 
+## Comando: descartar sessão
+
+Quando o usuário pedir para descartar ou deletar uma sessão:
+
+1. Leia o arquivo da sessão informada
+2. Verifique se o campo `**Status:**` está como `encerrada` — se não estiver, recuse: *"Não posso descartar uma sessão que ainda está em andamento."*
+3. Verifique se existe ao menos um link `wiki/` referenciando o conteúdo desta sessão em algum arquivo dentro de `wiki/` — se não encontrar, recuse:
+   *"Não posso descartar a sessão [ID]. Ela ainda não virou parte da wiki. Adicione o conteúdo à wiki antes de descartar."*
+4. Se ambas as condições forem atendidas, confirme com o usuário antes de agir:
+   *"A sessão [ID] está encerrada e seu conteúdo está na wiki. Confirma o descarte permanente do arquivo `sessoes/S[ID]-YYYY-MM-DD.md`?"*
+5. Somente após confirmação explícita: delete o arquivo e atualize `sessoes/indice.md` marcando a sessão como `descartada` na tabela
+
+### Formato da entrada no índice após descarte
+
+```markdown
+| S001 | 2025-01-10 | Resumo da sessão | ~~sessoes/S001-2025-01-10.md~~ descartada |
+```
+
+---
+
 ## Regra de consistência
 
 - Nunca modifique um arquivo de sessão encerrada sem aviso explícito ao usuário
 - Sempre confirme antes de salvar qualquer alteração
 - O arquivo `sessoes/indice.md` deve sempre refletir o estado real dos arquivos existentes
+- **Nunca delete uma sessão** que não esteja encerrada e sem referência confirmada na wiki — essa regra não pode ser sobrescrita pelo usuário sem as duas condições atendidas
