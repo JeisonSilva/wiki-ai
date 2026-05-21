@@ -1,0 +1,156 @@
+# Wiki-AI — Regras Globais
+
+## Princípio fundamental
+
+Este projeto é uma wiki construída exclusivamente a partir de conhecimento fornecido pelo usuário e sessões de trabalho registradas. Você não é uma fonte de conhecimento — você é um organizador e sintetizador.
+
+**Nunca use conhecimento externo para gerar conteúdo deste projeto.**
+
+---
+
+## Fronteiras de conhecimento
+
+### Permitido
+- Conteúdo presente em `wiki/pages/`
+- Fontes registradas em `fontes/catalogo.md` e arquivos em `fontes/`
+- Resumos de sessões em `sessoes/`
+- Instruções explícitas do usuário no chat
+
+### Proibido sem aprovação explícita
+- Busca na internet
+- Uso de conhecimento geral do modelo para gerar conteúdo da wiki
+- Criar arquivos fora da estrutura do projeto
+- Inferir ou expandir conteúdo além do que está nas fontes locais
+
+Se faltar informação para responder, diga:
+*"Não encontrei isso nas fontes locais. Você quer adicionar uma fonte ou registrar isso numa sessão?"*
+
+---
+
+## Pipeline obrigatório
+
+Todo chat segue este pipeline. Não pule nenhuma etapa.
+
+### Passo 1 — abrir sessão (sempre)
+
+Ao iniciar qualquer conversa, acione o `agent-sessoes` para abrir uma sessão.
+Não responda nenhuma solicitação do usuário antes de confirmar que a sessão está aberta.
+
+```
+agent-sessoes → "inicia sessão"
+aguarda confirmação: "Sessão [ID] iniciada."
+```
+
+---
+
+### Passo 2 — rota por tipo de atividade
+
+Após a sessão aberta, identifique o tipo de atividade e siga a rota correspondente:
+
+#### Rota A — conversa ou tarefa sem commit
+
+Para qualquer pedido que não envolva commit (perguntas, criação de arquivos, análises, configurações):
+
+```
+1. Execute a tarefa normalmente
+2. agent-sessoes → registra a interação (pedido / raciocínio / resultado)
+3. Confirme ao usuário que a interação foi registrada
+```
+
+#### Rota B — commit
+
+Quando o usuário pedir um commit:
+
+```
+1. agent-sessoes  → encerra a sessão com resumo completo
+2. agent-wiki     → processa a sessão e atualiza as páginas da wiki
+3. Aguarda confirmação do usuário de que a wiki está ok
+4. Executa o git commit
+```
+
+**Nunca faça o commit antes de a sessão estar encerrada e processada na wiki.**
+
+---
+
+## Roteamento para agentes
+
+| Contexto | Agente | Arquivo de regras |
+|---|---|---|
+| Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.claude/agents/agent-fontes.md` |
+| Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.claude/agents/agent-sessoes.md` |
+| Criar ou atualizar páginas da wiki | `agent-wiki` | `.claude/agents/agent-wiki.md` |
+| Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `.claude/agents/agent-dev.md` |
+
+---
+
+## Checklist de qualidade — páginas wiki
+
+Antes de confirmar compilação:
+
+- [ ] Página tem resumo de 1-2 linhas
+- [ ] Seção "Por quê?" explica a motivação
+- [ ] "Como aplicar" tem orientação prática
+- [ ] Nenhuma página está órfã (toda página tem referência cruzada)
+- [ ] Índice atualizado com nova página
+- [ ] Nenhuma contradição com páginas existentes
+- [ ] Todas as fontes usadas estão em `fontes/catalogo.md`
+
+---
+
+## Git workflow
+
+### Branch
+Sempre trabalhar em branch de feature a partir de `main`:
+```bash
+git checkout -b claude/feature-name
+```
+
+### Commits
+Formato: `[tipo]: [o que mudou] — sessão #X`
+
+Exemplos:
+```
+feat: add wiki page on retry strategies — session #5
+fix: resolve contradiction between error handling pages — session #7
+refactor: reorganize wiki index — maintenance
+```
+
+### Push & PR
+Após validação humana:
+```bash
+git push -u origin claude/feature-name
+# Depois criar PR para revisão
+```
+
+---
+
+## Restrições importantes
+
+1. **Sem conhecimento externo** — tudo vem das fontes ou sessões
+2. **Validar antes de compilar** — humano aprova antes de atualizar a wiki
+3. **Uma ideia por página** — sem mega-páginas
+4. **Sempre citar fontes** — (Fonte ID: X) ou (Sessão #X)
+5. **Nunca deletar** — arquivar em vez de deletar
+6. **Versionar tudo** — git é a verdade
+
+---
+
+## Feedback e mudanças
+
+Se notar:
+- **Contradição** entre páginas → sinalizar para revisão
+- **Página órfã** (sem referência) → mesclar ou deletar
+- **Padrão ausente** → sugerir nova página
+- **Fonte obsoleta** → marcar como depreciada no catálogo
+
+Toda mudança flui pelo `agent-wiki` + validação humana.
+
+---
+
+## Comportamento padrão
+
+- Idioma: português brasileiro
+- Antes de escrever qualquer arquivo, confirme com o usuário o que será criado ou alterado
+- Cite sempre qual fonte local embasa cada afirmação
+- Nunca delete arquivos sem as travas definidas em cada agente
+- Se o pedido não se encaixar em nenhum agente, pergunte antes de agir
