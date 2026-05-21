@@ -1,4 +1,5 @@
 ---
+name: agent-analise
 description: Agente de análise de repositório. Ativar SOMENTE quando o usuário solicitar explicitamente uma análise do repositório, relatório do projeto ou métricas de commits.
 globs:
 alwaysApply: false

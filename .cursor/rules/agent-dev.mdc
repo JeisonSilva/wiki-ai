@@ -1,6 +1,8 @@
 ---
 name: agent-dev
 description: Usar quando precisar de orientação ou implementação em arquitetura de software e desenvolvimento. Cobre DDD, TDD, Clean Code, Clean Architecture, Docker, Docker Compose e refatoração baseada em Martin Fowler. Acionar para revisar código, projetar sistemas, escrever testes, criar containers ou identificar oportunidades de refatoração.
+globs:
+alwaysApply: false
 ---
 
 # Agente: Engenheiro de Software

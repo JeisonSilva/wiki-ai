@@ -1,6 +1,8 @@
 ---
 name: agent-sessoes
 description: Usar quando precisar iniciar uma sessão de trabalho, registrar interações, encerrar sessão ou consultar sessões passadas. Sempre invocar no início de qualquer conversa antes de executar qualquer tarefa.
+globs:
+alwaysApply: false
 ---
 
 # Agente: Gestor de Sessões

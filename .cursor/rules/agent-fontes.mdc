@@ -1,6 +1,8 @@
 ---
 name: agent-fontes
 description: Usar quando precisar catalogar uma nova fonte, buscar fontes existentes, atualizar metadados de fontes ou listar fontes por tag/palavra-chave. Acionar ao receber documentação, artigos, links ou qualquer material novo para o projeto.
+globs:
+alwaysApply: false
 ---
 
 # Agente: Gestor de Fontes

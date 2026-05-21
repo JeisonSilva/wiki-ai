@@ -1,6 +1,8 @@
 ---
 name: agent-wiki
 description: Usar quando precisar processar uma sessão encerrada para gerar páginas wiki, criar ou atualizar páginas de conhecimento, consultar a wiki por assunto, ou fazer lint para identificar contradições e páginas órfãs. Acionar após encerramento de sessão e antes de qualquer commit.
+globs:
+alwaysApply: false
 ---
 
 # Agente: Gestor da Wiki
