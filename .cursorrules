@@ -76,9 +76,73 @@ Quando o usuário pedir um commit:
 
 | Contexto | Agente | Arquivo de regras |
 |---|---|---|
-| Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.cursor/rules/agent-fontes.mdc` |
-| Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.cursor/rules/agent-sessoes.mdc` |
-| Criar ou atualizar páginas da wiki | `agent-wiki` | `.cursor/rules/agent-wiki.mdc` |
+| Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.claude/agents/agent-fontes.md` |
+| Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.claude/agents/agent-sessoes.md` |
+| Criar ou atualizar páginas da wiki | `agent-wiki` | `.claude/agents/agent-wiki.md` |
+
+---
+
+## Checklist de qualidade — páginas wiki
+
+Antes de confirmar compilação:
+
+- [ ] Página tem resumo de 1-2 linhas
+- [ ] Seção "Por quê?" explica a motivação
+- [ ] "Como aplicar" tem orientação prática
+- [ ] Nenhuma página está órfã (toda página tem referência cruzada)
+- [ ] Índice atualizado com nova página
+- [ ] Nenhuma contradição com páginas existentes
+- [ ] Todas as fontes usadas estão em `fontes/catalogo.md`
+
+---
+
+## Git workflow
+
+### Branch
+Sempre trabalhar em branch de feature a partir de `main`:
+```bash
+git checkout -b claude/feature-name
+```
+
+### Commits
+Formato: `[tipo]: [o que mudou] — sessão #X`
+
+Exemplos:
+```
+feat: add wiki page on retry strategies — session #5
+fix: resolve contradiction between error handling pages — session #7
+refactor: reorganize wiki index — maintenance
+```
+
+### Push & PR
+Após validação humana:
+```bash
+git push -u origin claude/feature-name
+# Depois criar PR para revisão
+```
+
+---
+
+## Restrições importantes
+
+1. **Sem conhecimento externo** — tudo vem das fontes ou sessões
+2. **Validar antes de compilar** — humano aprova antes de atualizar a wiki
+3. **Uma ideia por página** — sem mega-páginas
+4. **Sempre citar fontes** — (Fonte ID: X) ou (Sessão #X)
+5. **Nunca deletar** — arquivar em vez de deletar
+6. **Versionar tudo** — git é a verdade
+
+---
+
+## Feedback e mudanças
+
+Se notar:
+- **Contradição** entre páginas → sinalizar para revisão
+- **Página órfã** (sem referência) → mesclar ou deletar
+- **Padrão ausente** → sugerir nova página
+- **Fonte obsoleta** → marcar como depreciada no catálogo
+
+Toda mudança flui pelo `agent-wiki` + validação humana.
 
 ---
 
