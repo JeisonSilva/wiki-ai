@@ -64,10 +64,12 @@ aguarda confirmação: "Sessão [ID] iniciada."
 1. agent-sessoes  → encerra a sessão com resumo completo
 2. agent-wiki     → processa a sessão e atualiza as páginas da wiki
 3. Aguarda confirmação do usuário de que a wiki está ok
-4. Executa o git commit
+4. agent-commits  → monta a mensagem de commit no padrão semântico
+5. Aguarda confirmação do usuário da mensagem de commit
+6. Executa o git commit
 ```
 
-**Nunca faça o commit antes de a sessão estar encerrada e processada na wiki.**
+**Nunca faça o commit antes de a sessão estar encerrada, processada na wiki e com a mensagem validada pelo agent-commits.**
 
 ---
 
@@ -190,5 +192,5 @@ Toda mudança flui pelo `agent-wiki` + validação humana.
 
 ---
 
-**Atualizado em:** 2026-05-20  
+**Atualizado em:** 2026-05-21  
 **Padrão base:** Karpathy LLM Wiki
