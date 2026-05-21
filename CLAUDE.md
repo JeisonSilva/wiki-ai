@@ -64,10 +64,11 @@ aguarda confirmação: "Sessão [ID] iniciada."
 1. agent-sessoes  → encerra a sessão com resumo completo
 2. agent-wiki     → processa a sessão e atualiza as páginas da wiki
 3. Aguarda confirmação do usuário de que a wiki está ok
-4. Executa o git commit
+4. agent-commits  → analisa staging, propõe mensagem semântica, aguarda aprovação e executa o commit
 ```
 
-**Nunca faça o commit antes de a sessão estar encerrada e processada na wiki.**
+**Nunca faça o commit antes de a sessão estar encerrada e processada na wiki.**  
+**Nunca execute o commit diretamente — sempre delegue ao `agent-commits`.**
 
 ---
 
@@ -79,6 +80,7 @@ aguarda confirmação: "Sessão [ID] iniciada."
 | Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.claude/agents/agent-sessoes.md` |
 | Criar ou atualizar páginas da wiki | `agent-wiki` | `.claude/agents/agent-wiki.md` |
 | Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `.claude/agents/agent-dev.md` |
+| Propor e executar commits semânticos | `agent-commits` | `.claude/agents/agent-commits.md` |
 
 ---
 
@@ -138,14 +140,21 @@ git checkout -b claude/feature-name
 ```
 
 ### Commits
-Formato: `[tipo]: [o que mudou] — sessão #X`
+Gerenciados pelo `agent-commits` seguindo o padrão iuricode/padroes-de-commits.
+
+Formato: `<tipo>(<escopo>): <descrição>`
+
+Tipos principais: `feat` ✨ `fix` 🐛 `docs` 📚 `refactor` ♻️ `chore` 🔧 `remove` 🗑️ `cleanup` 🧹
 
 Exemplos:
 ```
-feat: add wiki page on retry strategies — session #5
-fix: resolve contradiction between error handling pages — session #7
-refactor: reorganize wiki index — maintenance
+feat(wiki): adiciona página sobre estratégias de retry — sessão #5
+fix(wiki): corrige contradição entre páginas de error handling — sessão #7
+refactor(sessoes): reorganiza índice por data — manutenção
+docs: atualiza CLAUDE.md com agent-commits
 ```
+
+**Nunca escreva a mensagem de commit manualmente — acione o `agent-commits`.**
 
 ### Push & PR
 Após validação humana:
