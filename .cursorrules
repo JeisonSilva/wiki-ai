@@ -11,9 +11,9 @@ Este projeto é uma wiki construída exclusivamente a partir de conhecimento for
 ## Fronteiras de conhecimento
 
 ### Permitido
-- Conteúdo presente em `wiki/pages/`
-- Fontes registradas em `fontes/catalogo.md` e arquivos em `fontes/`
-- Resumos de sessões em `sessoes/`
+- Conteúdo presente em `docs/wiki/pages/`
+- Fontes registradas em `docs/fontes/catalogo.md` e arquivos em `docs/fontes/`
+- Resumos de sessões em `docs/sessoes/`
 - Instruções explícitas do usuário no chat
 
 ### Proibido sem aprovação explícita
@@ -85,6 +85,10 @@ Quando o usuário pedir um commit:
 | Compor, validar ou consultar padrão de commits | `agent-commits` | `claude/agents/agent-commits.md` |
 | Analisar repositório (somente quando solicitado) | `agent-analise` | `claude/agents/agent-analise.md` |
 
+## Pasta de trabalho
+
+Toda a estrutura de conhecimento fica dentro de `docs/`. Nunca crie arquivos de sessões, fontes ou wiki fora desta pasta.
+
 ---
 
 ## Checklist de qualidade — páginas wiki
@@ -97,7 +101,7 @@ Antes de confirmar compilação:
 - [ ] Nenhuma página está órfã (toda página tem referência cruzada)
 - [ ] Índice atualizado com nova página
 - [ ] Nenhuma contradição com páginas existentes
-- [ ] Todas as fontes usadas estão em `fontes/catalogo.md`
+- [ ] Todas as fontes usadas estão em `docs/fontes/catalogo.md`
 
 ---
 
