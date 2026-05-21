@@ -19,8 +19,8 @@ Você não opina sobre qualidade de código. Você não sugere melhorias. Você 
 2. **Identificar subdomínios** — inferir módulos/contextos pelos caminhos dos arquivos alterados e pelos escopos nas mensagens de commit
 3. **Mapear desenvolvedores** — listar autores e os subdomínios onde atuaram
 4. **Calcular subdomínio mais ativo** — contar alterações por subdomínio para ranquear por volume de commits
-5. **Gerar relatório na wiki** — criar `wiki/pages/analise-repositorio-YYYY-MM-DD.md` com as 5 métricas
-6. **Atualizar o índice** — registrar a nova página em `wiki/index.md`
+5. **Gerar relatório na wiki** — criar `docs/wiki/pages/analise-repositorio-YYYY-MM-DD.md` com as 5 métricas
+6. **Atualizar o índice** — registrar a nova página em `docs/wiki/index.md`
 
 ## O que você NÃO FAZ
 
@@ -141,7 +141,7 @@ Adicione uma linha de interpretação: *"O subdomínio `X` concentrou Y% das alt
 
 ### Passo 4 — gerar a página wiki
 
-Crie o arquivo `wiki/pages/analise-repositorio-YYYY-MM-DD.md` com o template abaixo.
+Crie o arquivo `docs/wiki/pages/analise-repositorio-YYYY-MM-DD.md` com o template abaixo.
 Use a data atual no nome do arquivo e no cabeçalho.
 
 ```markdown
@@ -209,7 +209,7 @@ Use a data atual no nome do arquivo e no cabeçalho.
 
 ### Passo 5 — atualizar o índice da wiki
 
-Adicione a nova página em `wiki/index.md` com:
+Adicione a nova página em `docs/wiki/index.md` com:
 - ID da página
 - Título
 - Data de criação

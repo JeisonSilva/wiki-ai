@@ -19,9 +19,9 @@ Este projeto é uma wiki construída exclusivamente a partir de conhecimento for
 ## Fronteiras de conhecimento
 
 ### Permitido
-- Conteúdo presente em `wiki/pages/`
-- Fontes registradas em `fontes/catalogo.md` e arquivos em `fontes/`
-- Resumos de sessões em `sessoes/`
+- Conteúdo presente em `docs/wiki/pages/`
+- Fontes registradas em `docs/fontes/catalogo.md` e arquivos em `docs/fontes/`
+- Resumos de sessões em `docs/sessoes/`
 - Instruções explícitas do usuário no chat
 
 ### Proibido sem aprovação explícita
@@ -96,15 +96,16 @@ wiki-ai/
 ├── README.md                 # Visão geral
 ├── CLAUDE.md                 # Este arquivo
 │
-├── fontes/                   # Fontes brutas (imutável)
-│   └── catalogo.md
-│
-├── sessoes/                  # Sessões de trabalho
-│   └── indice.md
-│
-└── wiki/                     # Conhecimento compilado
-    ├── index.md
-    └── pages/
+└── docs/                     # Pasta de trabalho principal
+    ├── fontes/               # Fontes brutas (imutável)
+    │   └── catalogo.md
+    │
+    ├── sessoes/              # Sessões de trabalho
+    │   └── indice.md
+    │
+    └── wiki/                 # Conhecimento compilado
+        ├── index.md
+        └── pages/
 ```
 
 ---
@@ -113,9 +114,9 @@ wiki-ai/
 
 | Camada | Local | Responsável |
 |--------|-------|-------------|
-| Fontes (bruto) | `fontes/` | Humano adiciona, `agent-fontes` cataloga |
-| Sessões (trabalho) | `sessoes/` | `agent-sessoes` |
-| Wiki (compilado) | `wiki/pages/` | `agent-wiki` |
+| Fontes (bruto) | `docs/fontes/` | Humano adiciona, `agent-fontes` cataloga |
+| Sessões (trabalho) | `docs/sessoes/` | `agent-sessoes` |
+| Wiki (compilado) | `docs/wiki/pages/` | `agent-wiki` |
 
 ---
 
@@ -129,7 +130,7 @@ Antes de confirmar compilação:
 - [ ] Nenhuma página está órfã (toda página tem referência cruzada)
 - [ ] Índice atualizado com nova página
 - [ ] Nenhuma contradição com páginas existentes
-- [ ] Todas as fontes usadas estão em `fontes/catalogo.md`
+- [ ] Todas as fontes usadas estão em `docs/fontes/catalogo.md`
 
 ---
 

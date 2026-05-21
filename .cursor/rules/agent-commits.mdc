@@ -13,7 +13,7 @@ Este agente opera exclusivamente com base na fonte F001 (iuricode/padroes-de-com
 **Nunca use conhecimento externo para gerar conteúdo.**
 
 Fontes válidas:
-- Fonte F001: `https://github.com/iuricode/padroes-de-commits` — catalogada em `fontes/catalogo.md`
+- Fonte F001: `https://github.com/iuricode/padroes-de-commits` — catalogada em `docs/fontes/catalogo.md`
 
 ---
 

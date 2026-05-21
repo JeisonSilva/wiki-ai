@@ -28,9 +28,9 @@ Conhecimento bruto  →  Sessão registrada  →  Página wiki  →  Referência
 
 | Camada | Local | Papel |
 |--------|-------|-------|
-| **Fontes** | `fontes/` | Documentação, código, artigos. Imutável. Catalogada com ID. |
-| **Sessões** | `sessoes/` | Conversas de trabalho registradas. Cada sessão alimenta a wiki. |
-| **Wiki** | `wiki/pages/` | Conhecimento compilado, indexado e com citação de origem. |
+| **Fontes** | `docs/fontes/` | Documentação, código, artigos. Imutável. Catalogada com ID. |
+| **Sessões** | `docs/sessoes/` | Conversas de trabalho registradas. Cada sessão alimenta a wiki. |
+| **Wiki** | `docs/wiki/pages/` | Conhecimento compilado, indexado e com citação de origem. |
 
 ---
 
@@ -49,15 +49,16 @@ wiki-ai/
 ├── CLAUDE.md                 # Contexto para Claude Code
 ├── README.md
 │
-├── fontes/
-│   └── catalogo.md           # Índice de fontes
-│
-├── sessoes/
-│   └── indice.md             # Índice de sessões
-│
-└── wiki/
-    ├── index.md              # Mapa principal
-    └── pages/                # Páginas compiladas
+└── docs/                     # Pasta de trabalho principal
+    ├── fontes/
+    │   └── catalogo.md       # Índice de fontes
+    │
+    ├── sessoes/
+    │   └── indice.md         # Índice de sessões
+    │
+    └── wiki/
+        ├── index.md          # Mapa principal
+        └── pages/            # Páginas compiladas
 ```
 
 ---
@@ -188,8 +189,8 @@ cp -r .claude/agents /seu-projeto/.claude/
 Em seguida, crie a estrutura de pastas no seu projeto:
 
 ```bash
-mkdir -p fontes sessoes wiki/pages
-touch fontes/catalogo.md sessoes/indice.md wiki/index.md
+mkdir -p docs/fontes docs/sessoes docs/wiki/pages
+touch docs/fontes/catalogo.md docs/sessoes/indice.md docs/wiki/index.md
 ```
 
 ---
