@@ -75,10 +75,11 @@ aguarda confirmação: "Sessão [ID] iniciada."
 
 | Contexto | Agente | Definição |
 |---|---|---|
-| Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.claude/agents/agent-fontes.md` |
-| Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.claude/agents/agent-sessoes.md` |
-| Criar ou atualizar páginas da wiki | `agent-wiki` | `.claude/agents/agent-wiki.md` |
-| Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `.claude/agents/agent-dev.md` |
+| Catalogar, buscar ou atualizar fontes | `agent-fontes` | `claude/agents/agent-fontes.md` |
+| Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `claude/agents/agent-sessoes.md` |
+| Criar ou atualizar páginas da wiki | `agent-wiki` | `claude/agents/agent-wiki.md` |
+| Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `claude/agents/agent-dev.md` |
+| Compor, validar ou consultar padrão de commits | `agent-commits` | `claude/agents/agent-commits.md` |
 
 ---
 
