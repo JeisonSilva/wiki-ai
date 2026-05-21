@@ -1,62 +1,193 @@
-# CLAUDE.md — Wiki-AI Project Context
+# CLAUDE.md — Wiki-AI
 
-## What This Project Is
+## O que é este projeto
 
-Wiki-AI is a **persistent knowledge repository** built incrementally by LLM. Based on Karpathy's LLM Wiki pattern: raw sources → compilation → structured synthesis.
+Wiki-AI é um **repositório de conhecimento persistente** construído incrementalmente por LLM. Baseado no padrão LLM Wiki de Karpathy: fontes brutas → compilação → síntese estruturada.
 
-Core idea: Instead of answering the same question every time, compile knowledge once in wiki pages. Knowledge compounds over time.
-
----
-
-## Quick Navigation
-
-| File | Purpose |
-|------|---------|
-| `.cursorrules` | Global rules, pipeline, git workflow, agent routing |
-| `.claude/agents/agent-sessoes.md` | Session manager agent |
-| `.claude/agents/agent-fontes.md` | Sources manager agent |
-| `.claude/agents/agent-wiki.md` | Wiki builder agent |
-| `.instructions.md` | Detailed pipeline explanation |
-| `fontes/catalogo.md` | Registered sources index |
-| `sessoes/indice.md` | Sessions index |
-| `wiki/index.md` | Wiki master index |
+Ideia central: em vez de responder a mesma pergunta toda vez, compilar o conhecimento uma vez em páginas wiki. O conhecimento se acumula com o tempo.
 
 ---
 
-## Project Structure
+## Princípio fundamental
+
+Este projeto é uma wiki construída exclusivamente a partir de conhecimento fornecido pelo usuário e sessões de trabalho registradas. Você não é uma fonte de conhecimento — você é um organizador e sintetizador.
+
+**Nunca use conhecimento externo para gerar conteúdo deste projeto.**
+
+---
+
+## Fronteiras de conhecimento
+
+### Permitido
+- Conteúdo presente em `wiki/pages/`
+- Fontes registradas em `fontes/catalogo.md` e arquivos em `fontes/`
+- Resumos de sessões em `sessoes/`
+- Instruções explícitas do usuário no chat
+
+### Proibido sem aprovação explícita
+- Busca na internet
+- Uso de conhecimento geral do modelo para gerar conteúdo da wiki
+- Criar arquivos fora da estrutura do projeto
+- Inferir ou expandir conteúdo além do que está nas fontes locais
+
+Se faltar informação: *"Não encontrei isso nas fontes locais. Você quer adicionar uma fonte ou registrar isso numa sessão?"*
+
+---
+
+## Pipeline obrigatório
+
+Todo chat segue este pipeline. Não pule nenhuma etapa.
+
+### Passo 1 — abrir sessão (sempre)
+
+Ao iniciar qualquer conversa, acione o `agent-sessoes` para abrir uma sessão.
+Não responda nenhuma solicitação do usuário antes de confirmar que a sessão está aberta.
+
+```
+agent-sessoes → "inicia sessão"
+aguarda confirmação: "Sessão [ID] iniciada."
+```
+
+### Passo 2 — rota por tipo de atividade
+
+#### Rota A — conversa ou tarefa sem commit
+
+```
+1. Execute a tarefa normalmente
+2. agent-sessoes → registra a interação (pedido / raciocínio / resultado)
+3. Confirme ao usuário que a interação foi registrada
+```
+
+#### Rota B — commit
+
+```
+1. agent-sessoes  → encerra a sessão com resumo completo
+2. agent-wiki     → processa a sessão e atualiza as páginas da wiki
+3. Aguarda confirmação do usuário de que a wiki está ok
+4. Executa o git commit
+```
+
+**Nunca faça o commit antes de a sessão estar encerrada e processada na wiki.**
+
+---
+
+## Agentes
+
+| Contexto | Agente | Definição |
+|---|---|---|
+| Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.claude/agents/agent-fontes.md` |
+| Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.claude/agents/agent-sessoes.md` |
+| Criar ou atualizar páginas da wiki | `agent-wiki` | `.claude/agents/agent-wiki.md` |
+| Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `.claude/agents/agent-dev.md` |
+
+---
+
+## Estrutura do projeto
 
 ```
 wiki-ai/
-├── .cursorrules              # Global rules & agent routing (source of truth)
-├── .claude/agents/           # Agent definitions
-├── .instructions.md          # Detailed pipeline
-├── README.md                 # Project overview
-├── CLAUDE.md                 # This file
+├── .cursorrules              # Regras globais (espelho deste arquivo)
+├── .claude/agents/           # Definições dos agentes
+├── .instructions.md          # Pipeline detalhado
+├── README.md                 # Visão geral
+├── CLAUDE.md                 # Este arquivo
 │
-├── fontes/                   # Raw sources (immutable)
+├── fontes/                   # Fontes brutas (imutável)
 │   └── catalogo.md
 │
-├── sessoes/                  # Work sessions
+├── sessoes/                  # Sessões de trabalho
 │   └── indice.md
 │
-└── wiki/                     # Compiled knowledge
+└── wiki/                     # Conhecimento compilado
     ├── index.md
     └── pages/
 ```
 
 ---
 
-## Three-Layer Architecture
+## Arquitetura em três camadas
 
-| Layer | Location | Who manages |
-|-------|----------|-------------|
-| Fontes (raw) | `fontes/` | Human adds, agent-fontes catalogs |
-| Sessões (work) | `sessoes/` | agent-sessoes |
-| Wiki (compiled) | `wiki/pages/` | agent-wiki |
+| Camada | Local | Responsável |
+|--------|-------|-------------|
+| Fontes (bruto) | `fontes/` | Humano adiciona, `agent-fontes` cataloga |
+| Sessões (trabalho) | `sessoes/` | `agent-sessoes` |
+| Wiki (compilado) | `wiki/pages/` | `agent-wiki` |
 
 ---
 
-**Rules and pipeline:** see `.cursorrules`  
-**Agent behavior:** see `.claude/agents/`  
-**Language:** português brasileiro  
-**Last updated:** 2026-05-20
+## Checklist de qualidade — páginas wiki
+
+Antes de confirmar compilação:
+
+- [ ] Página tem resumo de 1-2 linhas
+- [ ] Seção "Por quê?" explica a motivação
+- [ ] "Como aplicar" tem orientação prática
+- [ ] Nenhuma página está órfã (toda página tem referência cruzada)
+- [ ] Índice atualizado com nova página
+- [ ] Nenhuma contradição com páginas existentes
+- [ ] Todas as fontes usadas estão em `fontes/catalogo.md`
+
+---
+
+## Git workflow
+
+### Branch
+Sempre trabalhar em branch de feature a partir de `main`:
+```bash
+git checkout -b claude/feature-name
+```
+
+### Commits
+Formato: `[tipo]: [o que mudou] — sessão #X`
+
+Exemplos:
+```
+feat: add wiki page on retry strategies — session #5
+fix: resolve contradiction between error handling pages — session #7
+refactor: reorganize wiki index — maintenance
+```
+
+### Push & PR
+Após validação humana:
+```bash
+git push -u origin claude/feature-name
+# Depois criar PR para revisão
+```
+
+---
+
+## Restrições importantes
+
+1. **Sem conhecimento externo** — tudo vem das fontes ou sessões
+2. **Validar antes de compilar** — humano aprova antes de atualizar a wiki
+3. **Uma ideia por página** — sem mega-páginas
+4. **Sempre citar fontes** — (Fonte ID: X) ou (Sessão #X)
+5. **Nunca deletar** — arquivar em vez de deletar
+6. **Versionar tudo** — git é a verdade
+
+---
+
+## Feedback e mudanças
+
+Se notar:
+- **Contradição** entre páginas → sinalizar para revisão
+- **Página órfã** (sem referência) → mesclar ou deletar
+- **Padrão ausente** → sugerir nova página
+- **Fonte obsoleta** → marcar como depreciada no catálogo
+
+Toda mudança flui pelo `agent-wiki` + validação humana.
+
+---
+
+## Comportamento padrão
+
+- Idioma: português brasileiro
+- Antes de escrever qualquer arquivo, confirme com o usuário o que será criado ou alterado
+- Cite sempre qual fonte local embasa cada afirmação
+- Nunca delete arquivos sem as travas definidas em cada agente
+- Se o pedido não se encaixar em nenhum agente, pergunte antes de agir
+
+---
+
+**Atualizado em:** 2026-05-20  
+**Padrão base:** Karpathy LLM Wiki

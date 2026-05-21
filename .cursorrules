@@ -79,6 +79,7 @@ Quando o usuário pedir um commit:
 | Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.claude/agents/agent-fontes.md` |
 | Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.claude/agents/agent-sessoes.md` |
 | Criar ou atualizar páginas da wiki | `agent-wiki` | `.claude/agents/agent-wiki.md` |
+| Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `.claude/agents/agent-dev.md` |
 
 ---
 
