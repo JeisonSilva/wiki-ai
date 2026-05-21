@@ -27,20 +27,58 @@ Se faltar informação para responder, diga:
 
 ---
 
-## Roteamento para agentes
+## Pipeline obrigatório
 
-Identifique o contexto do pedido e acione o agente correto:
+Todo chat segue este pipeline. Não pule nenhuma etapa.
+
+### Passo 1 — abrir sessão (sempre)
+
+Ao iniciar qualquer conversa, acione o `agent-sessoes` para abrir uma sessão.
+Não responda nenhuma solicitação do usuário antes de confirmar que a sessão está aberta.
+
+```
+agent-sessoes → "inicia sessão"
+aguarda confirmação: "Sessão [ID] iniciada."
+```
+
+---
+
+### Passo 2 — rota por tipo de atividade
+
+Após a sessão aberta, identifique o tipo de atividade e siga a rota correspondente:
+
+#### Rota A — conversa ou tarefa sem commit
+
+Para qualquer pedido que não envolva commit (perguntas, criação de arquivos, análises, configurações):
+
+```
+1. Execute a tarefa normalmente
+2. agent-sessoes → registra a interação (pedido / raciocínio / resultado)
+3. Confirme ao usuário que a interação foi registrada
+```
+
+#### Rota B — commit
+
+Quando o usuário pedir um commit:
+
+```
+1. agent-sessoes  → encerra a sessão com resumo completo
+2. agent-wiki     → processa a sessão e atualiza as páginas da wiki
+3. Aguarda confirmação do usuário de que a wiki está ok
+4. Executa o git commit
+```
+
+**Nunca faça o commit antes de a sessão estar encerrada e processada na wiki.**
+
+---
+
+## Roteamento para agentes
 
 | Contexto | Agente | Arquivo de regras |
 |---|---|---|
 | Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.cursor/rules/agent-fontes.mdc` |
 | Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.cursor/rules/agent-sessoes.mdc` |
 | Criar ou atualizar páginas da wiki | `agent-wiki` | `.cursor/rules/agent-wiki.mdc` |
-
-Quando o pedido envolver mais de um agente, execute-os na ordem:
-1. `agent-sessoes` — garante que a sessão está registrada
-2. `agent-fontes` — verifica ou cataloga fontes envolvidas
-3. `agent-wiki` — transforma em conteúdo permanente
 
 ---
 
