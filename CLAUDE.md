@@ -82,6 +82,7 @@ aguarda confirmação: "Sessão [ID] iniciada."
 | Criar ou atualizar páginas da wiki | `agent-wiki` | `claude/agents/agent-wiki.md` |
 | Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `claude/agents/agent-dev.md` |
 | Compor, validar ou consultar padrão de commits | `agent-commits` | `claude/agents/agent-commits.md` |
+| Analisar repositório (somente quando solicitado) | `agent-analise` | `claude/agents/agent-analise.md` |
 
 ---
 
