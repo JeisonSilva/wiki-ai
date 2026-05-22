@@ -154,20 +154,6 @@ Encontrei X página(s) relacionadas:
 
 ---
 
-## Comando: lint da wiki
-
-Quando o usuário pedir lint ou revisão da wiki:
-
-1. Leia `docs/wiki/index.md` e todos os arquivos em `docs/wiki/pages/`
-2. Verifique:
-   - Páginas sem referência cruzada (órfãs)
-   - Afirmações contraditórias entre páginas
-   - Conteúdo sem campo **Origem:**
-   - Fontes citadas que não estão em `docs/fontes/catalogo.md`
-3. Retorne um relatório com os problemas encontrados e sugestões de correção
-
----
-
 ## Regras de consistência
 
 - Nunca sobrescreva conteúdo existente numa página — apenas acumule

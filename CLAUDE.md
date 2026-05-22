@@ -80,6 +80,7 @@ aguarda confirmação: "Sessão [ID] iniciada."
 | Catalogar, buscar ou atualizar fontes | `agent-fontes` | `.cursor/rules/agent-fontes.mdc` |
 | Iniciar, registrar, encerrar ou descartar sessões | `agent-sessoes` | `.cursor/rules/agent-sessoes.mdc` |
 | Criar ou atualizar páginas da wiki | `agent-wiki` | `.cursor/rules/agent-wiki.mdc` |
+| Verificação de saúde da wiki (contradições, órfãs, lacunas) | `agent-lint` | `.cursor/rules/agent-lint.mdc` |
 | Arquitetura, DDD, TDD, Clean Code, Docker, refatoração | `agent-dev` | `.cursor/rules/agent-dev.mdc` |
 | Compor, validar ou consultar padrão de commits | `agent-commits` | `.cursor/rules/agent-commits.mdc` |
 | Analisar repositório (somente quando solicitado) | `agent-analise` | `.cursor/rules/agent-analise.mdc` |
