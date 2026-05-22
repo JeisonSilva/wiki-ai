@@ -1,6 +1,8 @@
 ---
 name: agent-wiki
 description: Usar quando precisar processar uma sessão encerrada para gerar páginas wiki, criar ou atualizar páginas de conhecimento, consultar a wiki por assunto, ou fazer lint para identificar contradições e páginas órfãs. Acionar após encerramento de sessão e antes de qualquer commit.
+globs:
+alwaysApply: false
 ---
 
 # Agente: Gestor da Wiki
@@ -149,20 +151,6 @@ Encontrei X página(s) relacionadas:
 
 3. Se o usuário quiser ver o conteúdo, leia a página e apresente o bloco relevante
 4. Se não encontrar: *"Nenhuma página na wiki trata desse assunto ainda. Posso processar uma sessão que cubra isso."*
-
----
-
-## Comando: lint da wiki
-
-Quando o usuário pedir lint ou revisão da wiki:
-
-1. Leia `docs/wiki/index.md` e todos os arquivos em `docs/wiki/pages/`
-2. Verifique:
-   - Páginas sem referência cruzada (órfãs)
-   - Afirmações contraditórias entre páginas
-   - Conteúdo sem campo **Origem:**
-   - Fontes citadas que não estão em `docs/fontes/catalogo.md`
-3. Retorne um relatório com os problemas encontrados e sugestões de correção
 
 ---
 

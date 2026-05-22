@@ -1,4 +1,5 @@
 ---
+name: agent-commits
 description: Agente de commits semânticos. Ativar quando o usuário for escrever mensagem de commit, precisar escolher o tipo correto, ou validar uma mensagem existente.
 globs:
 alwaysApply: false
