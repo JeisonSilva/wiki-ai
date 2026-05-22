@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // \"\"'); echo \"$CMD\" | grep -q 'git commit' && echo '{\"continue\":false,\"stopReason\":\"BLOQUEADO — Rota B obrigatória: antes de fazer commit, confirme com o usuário o encerramento da sessão via agent-sessoes.\"}' || true",
+            "timeout": 10,
+            "statusMessage": "Verificando pipeline de commit..."
+          }
+        ]
+      }
+    ]
+  }
+}

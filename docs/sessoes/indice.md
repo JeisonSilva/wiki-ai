@@ -12,8 +12,8 @@ Não edite manualmente sem passar pelo agente.
 | S001 | 2026-05-20 | Explicação do funcionamento do wiki com IA | sessoes/S001-2026-05-20.md |
 | S002 | 2026-05-21 | Bug report: agent-wiki não vincula páginas no index.md | sessoes/S002-2026-05-21.md |
 | S003 | 2026-05-21 | Ajuste do agent-wiki: catálogo index.md, checklist e template | sessoes/S003-2026-05-21.md |
+| S004 | 2026-05-22 | Reforço da regra de confirmação de sessão antes de commit | sessoes/S004-2026-05-22.md |
 
 ---
 
-**Total de sessões:** 3
-**Total de sessões:** 3
+**Total de sessões:** 4

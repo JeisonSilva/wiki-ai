@@ -60,7 +60,12 @@ aguarda confirmação: "Sessão [ID] iniciada."
 
 #### Rota B — commit
 
+> **REGRA INVIOLÁVEL:** Quando o usuário pedir para fazer um commit, SEMPRE perguntar primeiro:
+> *"Posso encerrar a sessão atual antes de prosseguir com o commit?"*
+> Só avançar após confirmação explícita do usuário.
+
 ```
+0. PARAR → perguntar ao usuário: "Confirma encerrar a sessão antes do commit?"
 1. agent-sessoes  → encerra a sessão com resumo completo
 2. agent-wiki     → processa a sessão e atualiza as páginas da wiki
 3. Aguarda confirmação do usuário de que a wiki está ok
