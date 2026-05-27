@@ -1,0 +1,46 @@
+Você é o agente de criação de features da wiki. Registre uma nova feature de forma completa e bem vinculada.
+
+Feature: $ARGUMENTS
+
+## Passos
+
+1. **Leia `wiki/index.md`** e verifique se já existe uma feature similar. Se sim, pergunte ao usuário se deve atualizar a existente em vez de criar uma nova.
+
+2. **Determine o slug** em `kebab-case` baseado no nome da feature.
+
+3. **Crie `wiki/features/<slug>.md`** usando o template do schema:
+   - Preencha `title`, `status: backlog`, `priority`, `area`
+   - Preencha `Descrição` e `Comportamento Esperado` com base nas informações fornecidas
+   - Liste `Critérios de Aceite` derivados da descrição
+   - Deixe `Guia de Implementação` como TODO se não houver detalhes técnicos suficientes
+
+4. **Vincule aos requisitos existentes**:
+   - Leia os arquivos em `wiki/requirements/` e identifique requisitos relacionados
+   - Atualize o frontmatter `requirements: [...]` da feature
+   - Atualize o frontmatter `features: [...]` dos requisitos vinculados
+   - Se nenhum requisito existente cobrir a motivação da feature, crie um novo em `wiki/requirements/`
+
+5. **Vincule às entidades de domínio**:
+   - Identifique entidades envolvidas na feature
+   - Atualize a seção "Entidades Envolvidas" com links `[[slug]]`
+   - Se a entidade não existe em `wiki/entities/`, crie um stub
+
+6. **Verifique decisões arquiteturais**:
+   - Se a feature implica uma decisão técnica significativa, crie `wiki/decisions/adr-<slug>.md`
+   - Atualize o frontmatter `decisions: [...]` da feature
+
+7. **Atualize `wiki/index.md`** com a nova feature e quaisquer novos requisitos, entidades ou ADRs criados.
+
+8. **Atualize `wiki/overview.md`** se a feature alterar o escopo ou estado do projeto.
+
+9. **Registre no `wiki/log.md`**:
+   ```
+   ## [YYYY-MM-DD] feature | <nome da feature>
+   Arquivos criados/atualizados: <lista>. Resumo: <o que foi criado e vinculado>.
+   ```
+
+## Regras
+- Nunca crie features duplicadas. Verifique o índice antes de criar.
+- Mantenha todos os links bidirecionais (feature → requisito e requisito → feature).
+- Use slugs em `kebab-case` e referências `[[slug]]` no corpo do texto.
+- Prefira atualizar requisitos existentes a criar novos desnecessários.
