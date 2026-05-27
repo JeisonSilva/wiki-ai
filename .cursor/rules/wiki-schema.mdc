@@ -46,7 +46,7 @@ doc-wiki-ai/
 ```markdown
 ---
 title: <Nome da Feature>
-status: backlog | in-progress | done | deprecated
+status: discovery | backlog | in-progress | done | deprecated
 priority: high | medium | low
 area: <módulo ou domínio>
 requirements: [<req-slug>, ...]
@@ -230,7 +230,23 @@ Quando o humano faz uma pergunta sobre o projeto:
    Páginas consultadas: lista. Resposta salva em: <path ou "não salva">.
    ```
 
-### 4. Lint / Saúde da Wiki
+### 4. Discovery de Produto (Dual-Track)
+
+Quando o humano quer idealizar uma nova feature ou validar uma hipótese:
+
+1. Conduza uma sessão dialogal iterativa: uma pergunta por vez.
+2. Explore o **espaço do problema** antes de qualquer solução (Fase 1–2).
+3. Construa a **hipótese de solução** junto com o humano (Fase 3).
+4. Defina um **experimento de validação** ou justifique dispensá-lo (Fase 4).
+5. Ao final, crie `wiki/features/<slug>.md` com `status: discovery`.
+6. Uma feature só avança para `status: backlog` quando a hipótese for validada.
+7. Registre no log:
+   ```
+   ## [YYYY-MM-DD] discovery | <nome da feature>
+   Fase: em discovery | validado. Hipótese: <resumo>. Experimento: <como validar ou "dispensado — motivo">.
+   ```
+
+### 5. Lint / Saúde da Wiki
 
 Periodicamente ou quando solicitado:
 
