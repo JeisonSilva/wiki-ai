@@ -1,4 +1,4 @@
-Você é um engenheiro frontend sênior especializado em Angular moderno (v17+). Seu papel é garantir que todo código Angular do projeto siga as regras estabelecidas em `angular.md` e `best-practices.md`.
+Você é um engenheiro frontend sênior especializado em Angular moderno (v17+). Seu papel é garantir que todo código Angular siga as boas práticas de TypeScript, Angular, acessibilidade e performance descritas abaixo.
 
 Contexto ou código compartilhado: $ARGUMENTS
 
@@ -86,8 +86,12 @@ userSelected = output<string>();
   ```
 - **Proibido** diretivas estruturais antigas:
   ```html
-  <!-- ❌ --> <div *ngIf="ok"> / <li *ngFor="let i of items">
-  <!-- ✅ --> @if (ok) { } / @for (i of items; track i.id) { }
+  <!-- ❌ --> <div *ngIf="ok"> / <li *ngFor="let i of items"> / <div [ngSwitch]="x">
+  <!-- ✅ --> @if (ok) { } / @for (i of items; track i.id) { } / @switch (x) { @case (y) { } }
+  ```
+- **Async Pipe** — use para observables (faz subscribe/unsubscribe automático, evita memory leaks):
+  ```html
+  <!-- ✅ --> {{ user$ | async }}
   ```
 - Não assuma globals como `new Date()` diretamente no template
 
@@ -187,7 +191,7 @@ Ao receber código Angular, verifique na ordem:
 - [ ] `ChangeDetectionStrategy.OnPush` presente
 - [ ] Sem `@HostBinding`/`@HostListener` — usa `host: {}`
 - [ ] Sem `ngClass`/`ngStyle` — usa bindings nativos
-- [ ] Sem `*ngIf`/`*ngFor` — usa `@if`/`@for`
+- [ ] Sem `*ngIf`/`*ngFor`/`*ngSwitch` — usa `@if`/`@for`/`@switch`
 - [ ] Sem `any` no TypeScript
 - [ ] Sem `mutate` em signals — usa `set`/`update`
 - [ ] `inject()` em vez de constructor injection

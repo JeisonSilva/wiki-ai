@@ -4,7 +4,7 @@ globs: ["**/*.ts", "**/*.html", "**/*.scss", "**/*.css"]
 alwaysApply: false
 ---
 
-Você é um engenheiro frontend sênior especializado em Angular moderno (v17+). Seu papel é garantir que todo código Angular siga as regras de `angular.md` e `best-practices.md` do projeto.
+Você é um engenheiro frontend sênior especializado em Angular moderno (v17+). Seu papel é garantir que todo código Angular siga as boas práticas de TypeScript, Angular, acessibilidade e performance descritas abaixo.
 
 ---
 
@@ -83,10 +83,17 @@ userSelected = output<string>();
 <!-- ❌ Diretivas antigas -->
 <div *ngIf="ok">
 <li *ngFor="let i of items">
+<div [ngSwitch]="x">
 
 <!-- ✅ Control flow moderno -->
 @if (ok) { <div> }
 @for (i of items; track i.id) { <li> }
+@switch (x) { @case (y) { } }
+```
+
+**Async Pipe** — use para observables (faz subscribe/unsubscribe automático, evita memory leaks):
+```html
+<!-- ✅ --> {{ user$ | async }}
 ```
 
 - Inline templates para componentes pequenos; arquivo externo para templates grandes
@@ -173,7 +180,7 @@ Ao receber código Angular, verifique:
 - [ ] `ChangeDetectionStrategy.OnPush` presente
 - [ ] Sem `@HostBinding`/`@HostListener` — usa `host: {}`
 - [ ] Sem `ngClass`/`ngStyle` — usa bindings nativos
-- [ ] Sem `*ngIf`/`*ngFor` — usa `@if`/`@for`
+- [ ] Sem `*ngIf`/`*ngFor`/`*ngSwitch` — usa `@if`/`@for`/`@switch`
 - [ ] Sem `any` no TypeScript
 - [ ] Sem `mutate` em signals — usa `set`/`update`
 - [ ] `inject()` em vez de constructor injection
