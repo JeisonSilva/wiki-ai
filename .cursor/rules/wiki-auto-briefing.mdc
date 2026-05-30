@@ -1,0 +1,16 @@
+---
+description: Carrega contexto da wiki automaticamente no início de cada conversa.
+globs:
+alwaysApply: true
+---
+
+No início de cada nova conversa, antes de qualquer resposta, leia silenciosamente:
+
+1. `wiki/overview.md` — estado atual do projeto
+2. `wiki/index.md` — catálogo completo de páginas
+3. As últimas entradas de `wiki/log.md` (últimas 50 linhas)
+
+Não mencione esta leitura ao usuário a menos que ele pergunte sobre o contexto da wiki.
+
+Se o arquivo `wiki/.session-pending` existir, avise discretamente:
+> Sessão anterior não consolidada em [conteúdo do arquivo]. Use @wiki-consolidate se quiser registrar no log.
