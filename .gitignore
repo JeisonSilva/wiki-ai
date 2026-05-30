@@ -1,1 +1,4 @@
 wiki/.session-pending
+wiki/wiki.db
+wiki/wiki.db-shm
+wiki/wiki.db-wal

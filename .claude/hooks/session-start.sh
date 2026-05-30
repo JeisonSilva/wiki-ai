@@ -28,6 +28,11 @@ touch "$FLAG"
 WIKI="$(pwd)/wiki"
 [ -d "$WIKI" ] || exit 0
 
+# Sincroniza markdown → SQLite (incremental, silencioso)
+if [ -f "$(pwd)/scripts/sync_wiki.py" ] && command -v python3 &>/dev/null; then
+  python3 "$(pwd)/scripts/sync_wiki.py" >/dev/null 2>&1 || true
+fi
+
 {
   echo "=== BRIEFING AUTOMÁTICO DA WIKI ==="
   echo ""
