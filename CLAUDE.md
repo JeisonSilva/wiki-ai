@@ -8,6 +8,12 @@ Esta wiki é um artefato vivo e persistente. Você (o LLM) é o único responsá
 
 A wiki fica em `wiki/`. As fontes brutas ficam em `raw/`. Você lê ambas, mas **nunca modifica `raw/`**.
 
+### Captura Automática de Sessão
+
+No início de cada sessão, um hook injeta automaticamente o contexto da wiki (`overview.md`, `index.md`, últimas entradas do `log.md`). Você não precisa pedir para ler o índice — ele já estará no contexto.
+
+Ao final de cada sessão, rode `/wiki-consolidate` para registrar o que foi feito. Se o briefing automático mostrar um aviso de "sessão pendente", significa que a sessão anterior não foi consolidada — resolva antes de continuar.
+
 ---
 
 ## Estrutura de Diretórios
@@ -254,6 +260,20 @@ Periodicamente ou quando solicitado:
    ## [YYYY-MM-DD] lint
    Problemas encontrados: lista. Ações tomadas: lista.
    ```
+
+### 6. Consolidação de Sessão
+
+Ao final de uma sessão de trabalho, quando o humano rodar `/wiki-consolidate`:
+
+1. Revise a conversa atual e identifique o que foi feito.
+2. Escreva entrada no `wiki/log.md`:
+   ```
+   ## [YYYY-MM-DD] session | <resumo em uma linha>
+   Realizado: lista do que foi feito.
+   Pendente: lista do que ficou em aberto, ou "nenhum".
+   ```
+3. Atualize `wiki/overview.md` se o estado do projeto mudou.
+4. Delete `wiki/.session-pending` com `rm -f wiki/.session-pending`.
 
 ---
 

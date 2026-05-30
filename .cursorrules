@@ -8,6 +8,12 @@ Esta wiki é um artefato vivo e persistente. Você (o LLM) é o único responsá
 
 A wiki fica em `wiki/`. As fontes brutas ficam em `raw/`. Você lê ambas, mas **nunca modifica `raw/`**.
 
+### Briefing Automático
+
+A regra `@wiki-auto-briefing` (alwaysApply) instrui você a ler `overview.md`, `index.md` e as últimas entradas do `log.md` no início de cada conversa. Você não precisa ser solicitado — faça isso silenciosamente.
+
+Ao final de uma sessão relevante, use `@wiki-consolidate` para registrar o que foi feito no log.
+
 ---
 
 ## Estrutura de Diretórios
@@ -255,6 +261,20 @@ Periodicamente ou quando solicitado:
    ## [YYYY-MM-DD] lint
    Problemas encontrados: lista. Ações tomadas: lista.
    ```
+
+### 6. Consolidação de Sessão
+
+Ao final de uma sessão de trabalho, quando o humano usar `@wiki-consolidate`:
+
+1. Revise a conversa atual e identifique o que foi feito.
+2. Escreva entrada no `wiki/log.md`:
+   ```
+   ## [YYYY-MM-DD] session | <resumo em uma linha>
+   Realizado: lista do que foi feito.
+   Pendente: lista do que ficou em aberto, ou "nenhum".
+   ```
+3. Atualize `wiki/overview.md` se o estado do projeto mudou.
+4. Delete `wiki/.session-pending` se existir.
 
 ---
 
