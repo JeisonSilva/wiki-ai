@@ -4,13 +4,20 @@ globs:
 alwaysApply: true
 ---
 
-No início de cada nova conversa, antes de qualquer resposta, leia silenciosamente:
+No início de cada nova conversa, antes de qualquer resposta, execute silenciosamente:
 
-1. `wiki/overview.md` — estado atual do projeto
-2. `wiki/index.md` — catálogo completo de páginas
-3. As últimas entradas de `wiki/log.md` (últimas 50 linhas)
+1. **Sincronize o índice SQLite** (se `scripts/sync_wiki.py` existir):
+   ```bash
+   python3 scripts/sync_wiki.py
+   ```
+   Se falhar ou não existir, continue normalmente — o SQLite é opcional.
 
-Não mencione esta leitura ao usuário a menos que ele pergunte sobre o contexto da wiki.
+2. **Leia o contexto da wiki**:
+   - `wiki/overview.md` — estado atual do projeto
+   - `wiki/index.md` — catálogo completo de páginas
+   - Últimas 50 linhas de `wiki/log.md`
+
+Não mencione estas etapas ao usuário a menos que ele pergunte sobre o contexto da wiki.
 
 Se o arquivo `wiki/.session-pending` existir, avise discretamente:
 > Sessão anterior não consolidada em [conteúdo do arquivo]. Use @wiki-consolidate se quiser registrar no log.

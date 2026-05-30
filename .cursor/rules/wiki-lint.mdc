@@ -8,15 +8,18 @@ Você é o agente de saúde da wiki. Verifique a integridade e consistência de 
 
 ## Passos
 
-1. **Leia `wiki/index.md`** e liste todas as páginas catalogadas.
+1. **Execute o lint via SQLite** (se `wiki/wiki.db` existir):
+   ```bash
+   python3 scripts/sync_wiki.py   # garante banco atualizado
+   ./scripts/wiki-query.sh lint
+   ./scripts/wiki-query.sh orphans
+   ```
+   Use o output como base para os problemas encontrados. Se o banco não existir,
+   reconstrua com `python3 scripts/sync_wiki.py --rebuild` antes de prosseguir.
 
-2. **Verifique cada categoria de problema**:
-   - **Páginas órfãs**: páginas em `wiki/` sem nenhum `[[link]]` apontando para elas
-   - **Features sem requisitos**: arquivos em `wiki/features/` com `requirements: []` ou campo ausente
-   - **Requisitos sem features**: arquivos em `wiki/requirements/` com `features: []` ou campo ausente
+2. **Verifique manualmente** o que o SQLite não detecta:
    - **Entidades fantasma**: slugs `[[mencionados]]` em páginas mas sem arquivo próprio em `wiki/entities/`
    - **Links quebrados**: referências `[[slug]]` que não correspondem a nenhum arquivo existente na wiki
-   - **Features in-progress sem guia**: features com `status: in-progress` e seção "Guia de Implementação" vazia
 
 3. **Reporte os problemas** organizados por categoria, separando:
    - Problemas que serão corrigidos automaticamente

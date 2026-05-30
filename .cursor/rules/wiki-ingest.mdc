@@ -36,6 +36,11 @@ Você é o agente de ingestão da wiki. Processe um arquivo fonte em `raw/` e at
    Arquivos criados/atualizados: <lista>. Resumo: <o que foi extraído>.
    ```
 
+9. **Sincronize o índice SQLite** após escrever todas as páginas:
+   ```bash
+   python3 scripts/sync_wiki.py
+   ```
+
 ## Regras
 - Nunca escreva em `raw/`. Apenas leia.
 - Prefira atualizar páginas existentes a criar duplicatas.
