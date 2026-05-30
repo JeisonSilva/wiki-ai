@@ -32,7 +32,12 @@ garantindo continuidade para a próxima sessão.
 
 5. Delete o arquivo `wiki/.session-pending` se existir.
 
-6. Confirme ao usuário com uma linha resumindo o que foi consolidado.
+6. **Sincronize o índice SQLite**:
+   ```bash
+   python3 scripts/sync_wiki.py
+   ```
+
+7. Confirme ao usuário com uma linha resumindo o que foi consolidado.
 
 ## Quando usar
 
