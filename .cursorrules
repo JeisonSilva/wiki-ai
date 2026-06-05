@@ -276,6 +276,21 @@ Ao final de uma sessão de trabalho, quando o humano usar `@wiki-consolidate`:
 3. Atualize `wiki/overview.md` se o estado do projeto mudou.
 4. Delete `wiki/.session-pending` se existir.
 
+### 7. Implementação / Desenvolvimento
+
+Quando o humano pedir para implementar uma feature (ex: "implemente a home screen", "crie o componente X", "desenvolva o endpoint Y"):
+
+1. Identifique o slug da feature correspondente em `wiki/index.md`.
+2. Leia `wiki/features/<slug>.md` — absorva os critérios de aceite, comportamento esperado e guia de implementação.
+3. Para cada entidade listada em "Entidades Envolvidas", leia `wiki/entities/<slug>.md`.
+4. Para cada ADR listado em "Decisões Arquiteturais", leia `wiki/decisions/<slug>.md`.
+5. Para cada requisito listado em "Requisitos Relacionados", leia `wiki/requirements/<slug>.md`.
+6. Somente então inicie a implementação, seguindo estritamente as orientações encontradas.
+7. Se durante a implementação surgir algo não documentado na wiki (ex: token de design não catalogado, regra de negócio nova), sinalize ao humano e pergunte se deve atualizar a wiki antes de continuar.
+8. Ao concluir, atualize o `status` da feature para `in-progress` ou `done` conforme o caso.
+
+> **Regra:** nunca implemente uma feature sem antes ler a página wiki correspondente. O contexto da wiki tem precedência sobre suposições.
+
 ---
 
 ## Convenções de Nomenclatura
