@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "wiki": {
+      "command": "node",
+      "args": ["--no-warnings", "mcp-server/dist/index.js"]
+    }
+  }
+}

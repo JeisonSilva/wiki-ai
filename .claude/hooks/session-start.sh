@@ -25,7 +25,8 @@ FLAG="/tmp/wiki-briefed-${SESSION_ID}"
 [ -f "$FLAG" ] && exit 0
 touch "$FLAG"
 
-CLI="$(pwd)/mcp-server/dist/cli.js"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLI="$SCRIPT_DIR/../../mcp-server/dist/cli.js"
 
 if [ ! -f "$CLI" ]; then
   echo "=== WIKI MCP SERVER NÃO COMPILADO ==="
