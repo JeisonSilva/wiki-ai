@@ -1,6 +1,6 @@
 ---
-description: Schema de manutenção da wiki de conhecimento deste projeto de software. Aplicado sempre que o agente operar sobre arquivos da wiki ou raw/.
-globs: wiki/**/*.md,raw/**/*.md
+description: Schema de manutenção da wiki de conhecimento deste projeto de software (SQLite + MCP). Aplicado sempre que o agente operar sobre a wiki ou raw/.
+globs: raw/**/*.md
 alwaysApply: true
 ---
 
@@ -10,26 +10,32 @@ Este arquivo define como o LLM deve manter a wiki deste projeto de software. Lei
 
 ## Visão Geral
 
-Esta wiki é um artefato vivo e persistente. Você (o LLM) é o único responsável por escrever e manter os arquivos da wiki. O humano é responsável por fornecer fontes (requisitos, decisões, transcrições, specs), fazer perguntas e direcionar o foco.
+Esta wiki é um artefato vivo e persistente. Você (o LLM) é o único responsável por escrever e manter a wiki. O humano é responsável por fornecer fontes (requisitos, decisões, transcrições, specs), fazer perguntas e direcionar o foco.
 
-A wiki fica em `wiki/`. As fontes brutas ficam em `raw/`. Você lê ambas, mas **nunca modifica `raw/`**.
+**A wiki não é mais composta por arquivos `.md`.** Toda a wiki vive em `wiki/wiki.db`, um banco SQLite com busca full-text (FTS5) e busca semântica (embeddings). Você nunca lê ou escreve `wiki/wiki.db` diretamente — toda leitura e escrita é feita através das **tools MCP do servidor `wiki`** (`mcp-server/`), registrado em `.mcp.json`.
+
+As fontes brutas continuam em `raw/` como arquivos `.md` normais — você lê com a ferramenta de leitura de arquivos, mas **nunca modifica `raw/`**.
+
+### Briefing Automático
+
+A regra `@wiki-auto-briefing` (alwaysApply) instrui você a chamar `wiki_overview_get`, `wiki_list_pages` e `wiki_log_recent` (ou rodar `node mcp-server/dist/cli.js briefing`) no início de cada conversa. Você não precisa ser solicitado — faça isso silenciosamente.
+
+Ao final de uma sessão relevante, use `@wiki-consolidate` para registrar o que foi feito no log (`wiki_log_append`).
 
 ---
 
-## Estrutura de Diretórios
+## Estrutura do Projeto
 
 ```
-doc-wiki-ai/
-├── CLAUDE.md / .cursorrules   ← schema (este arquivo)
+wiki-ai/
+├── .cursorrules               ← este arquivo (schema para Cursor)
+├── CLAUDE.md                  ← schema para Claude Code (mesmo conteúdo)
+├── .mcp.json                  ← registra o servidor MCP "wiki"
+├── mcp-server/                ← servidor MCP em TypeScript (fonte das tools wiki_*)
+│   ├── src/                   ← db.ts, pages.ts, search.ts, embeddings.ts, tools...
+│   └── dist/                  ← build (gerado por `npm run build`)
 ├── wiki/
-│   ├── index.md               ← índice central de todo o conteúdo
-│   ├── log.md                 ← log cronológico append-only
-│   ├── overview.md            ← visão geral e estado atual do projeto
-│   ├── features/              ← uma página por feature
-│   ├── requirements/          ← páginas de requisitos funcionais e não-funcionais
-│   ├── architecture/          ← decisões arquiteturais, diagramas, ADRs
-│   ├── entities/              ← entidades de domínio (modelos, schemas, glossário)
-│   └── decisions/             ← ADRs (Architecture Decision Records)
+│   └── wiki.db                ← ÚNICA fonte de verdade da wiki (SQLite)
 └── raw/
     ├── requirements/          ← documentos brutos de requisitos
     ├── meetings/              ← transcrições de reuniões
@@ -37,31 +43,71 @@ doc-wiki-ai/
     └── assets/                ← imagens, diagramas brutos
 ```
 
+### Setup do servidor MCP
+
+Antes do primeiro uso (ou após alterar `mcp-server/src/`):
+
+```bash
+cd mcp-server && npm install && npm run build
+```
+
+O servidor é iniciado automaticamente pelo Cursor via `.mcp.json`. Na primeira chamada que gerar embeddings, o modelo `Xenova/all-MiniLM-L6-v2` (~30MB) é baixado e cacheado em `mcp-server/node_modules/@huggingface/transformers/.cache/` — requer acesso à internet uma vez. Se o download falhar (sem rede), o servidor usa automaticamente um fallback local determinístico (`local-hash-v1`, busca lexical aproximada) — a wiki continua funcional, apenas com busca semântica mais simples.
+
 ---
 
-## Tipos de Páginas e Templates
+## Modelo de Dados (`wiki/wiki.db`)
 
-### Feature (`wiki/features/<slug>.md`)
+| Tabela | Conteúdo |
+|---|---|
+| `pages` | Uma linha por página: `slug`, `type`, `title`, `status`, `area`, `priority`, `metadata` (JSON), `body` (markdown), `created_at`, `updated_at` |
+| `links` | Arestas `[[slug]]` extraídas do `body` (source_slug → target_slug) |
+| `tags` | Tags livres por página (de `metadata.tags`) |
+| `pages_fts` | Índice FTS5 (title + body) — busca full-text |
+| `embeddings` | Vetores por chunk de `body`, para busca semântica |
+| `log_entries` | Log cronológico (substitui o antigo `wiki/log.md`) |
+| `session_state` | Estado de sessão (substitui o antigo `wiki/.session-pending`) |
+
+### Tools MCP disponíveis (prefixo `wiki_`)
+
+| Tool | Uso |
+|---|---|
+| `wiki_get_page(slug)` | Retorna página completa: frontmatter + body + links + backlinks |
+| `wiki_list_pages(type?, status?, area?)` | Catálogo de páginas (substitui `wiki/index.md`) |
+| `wiki_upsert_page(slug, type, title, status?, area?, priority?, metadata?, body)` | Cria/atualiza página. Recalcula links, tags e embeddings automaticamente |
+| `wiki_delete_page(slug)` | Remove uma página |
+| `wiki_search(query, mode?, limit?)` | Busca: `fts` (full-text), `semantic` (embeddings) ou `hybrid` (padrão) |
+| `wiki_links(slug)` / `wiki_backlinks(slug)` | Links de saída / páginas que referenciam `slug` |
+| `wiki_deps(slug)` | Dependências transitivas (até profundidade 5) |
+| `wiki_orphans()` | Páginas sem backlinks |
+| `wiki_lint()` | Relatório de saúde da wiki |
+| `wiki_log_append(type, summary, details?)` | Registra entrada no log cronológico |
+| `wiki_log_recent(limit?)` | Últimas N entradas do log |
+| `wiki_overview_get()` / `wiki_overview_update(body, title?)` | Lê/atualiza a página `overview` |
+| `wiki_session_pending_get()` / `wiki_session_pending_clear()` | Estado de sessão pendente |
+
+> **Não existe mais `wiki/index.md`.** O catálogo é sempre gerado dinamicamente via `wiki_list_pages` — nunca o mantenha manualmente.
+
+---
+
+## Tipos de Páginas e Estrutura do `body`
+
+Cada página é uma linha em `pages`. Os campos `status`, `area`, `priority` são colunas; campos extras (listas de relacionamentos, datas específicas, origem) vão em `metadata` (JSON). O `body` é markdown livre, mas siga as seções abaixo por tipo para manter consistência.
+
+### Feature (`type: "feature"`)
+
+- `status`: `discovery | backlog | in-progress | done | deprecated`
+- `priority`: `high | medium | low`
+- `area`: módulo ou domínio
+- `metadata`: `{ "requirements": [<req-slug>, ...], "decisions": [<adr-slug>, ...] }`
 
 ```markdown
----
-title: <Nome da Feature>
-status: discovery | backlog | in-progress | done | deprecated
-priority: high | medium | low
-area: <módulo ou domínio>
-requirements: [<req-slug>, ...]
-decisions: [<adr-slug>, ...]
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
----
-
 # <Nome da Feature>
 
 ## Descrição
 O que essa feature faz e por que existe.
 
 ## Requisitos Relacionados
-Links para páginas de requisitos que motivam essa feature.
+Links [[req-slug]] para requisitos que motivam essa feature.
 
 ## Comportamento Esperado
 Descrição funcional: entradas, saídas, regras de negócio.
@@ -74,10 +120,10 @@ Descrição funcional: entradas, saídas, regras de negócio.
 Orientações técnicas, padrões a seguir, armadilhas conhecidas.
 
 ## Entidades Envolvidas
-Links para entidades de domínio relevantes.
+Links [[entidade-slug]] para entidades de domínio relevantes.
 
 ## Decisões Arquiteturais
-Links para ADRs que afetam esta feature.
+Links [[adr-slug]] para ADRs que afetam esta feature.
 
 ## Dependências
 - Features que devem existir antes desta
@@ -89,18 +135,12 @@ Contexto adicional, histórico de mudanças relevantes.
 
 ---
 
-### Requisito (`wiki/requirements/<slug>.md`)
+### Requisito (`type: "requirement"`)
+
+- `status`: `active | deprecated | superseded`
+- `metadata`: `{ "req-type": "functional" | "non-functional", "source": "<arquivo em raw/ ou reunião>", "features": [<feature-slug>, ...] }`
 
 ```markdown
----
-title: <Nome do Requisito>
-type: functional | non-functional
-status: active | deprecated | superseded
-source: <arquivo em raw/ ou reunião>
-features: [<feature-slug>, ...]
-created: YYYY-MM-DD
----
-
 # <Nome do Requisito>
 
 ## Descrição
@@ -113,7 +153,7 @@ Por que esse requisito existe. Qual problema resolve.
 Como saber se o requisito está satisfeito.
 
 ## Features que Implementam
-Links para features que cobrem este requisito.
+Links [[feature-slug]] para features que cobrem este requisito.
 
 ## Conflitos / Tensões
 Outros requisitos que entram em tensão com este.
@@ -124,17 +164,12 @@ Mudanças relevantes ao longo do tempo.
 
 ---
 
-### Entidade de Domínio (`wiki/entities/<slug>.md`)
+### Entidade de Domínio (`type: "entity"`)
+
+- `area`: módulo
+- `metadata`: `{ "entity-type": "model" | "service" | "concept" | "external" }`
 
 ```markdown
----
-title: <Nome da Entidade>
-type: model | service | concept | external
-area: <módulo>
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
----
-
 # <Nome da Entidade>
 
 ## Descrição
@@ -144,27 +179,23 @@ O que é esta entidade e seu papel no sistema.
 Campos principais com tipos e descrições.
 
 ## Relações
-Como se relaciona com outras entidades.
+Como se relaciona com outras entidades (use [[slug]]).
 
 ## Regras de Negócio
 Invariantes e restrições associadas.
 
 ## Usada Por
-Features e requisitos que dependem desta entidade.
+Features e requisitos que dependem desta entidade (use [[slug]]).
 ```
 
 ---
 
-### ADR (`wiki/decisions/<slug>.md`)
+### ADR (`type: "adr"`)
+
+- `status`: `proposed | accepted | deprecated | superseded`
+- `metadata`: `{ "date": "YYYY-MM-DD", "supersedes": "<adr-slug>" | null }`
 
 ```markdown
----
-title: <Título da Decisão>
-status: proposed | accepted | deprecated | superseded
-date: YYYY-MM-DD
-supersedes: <adr-slug ou null>
----
-
 # ADR: <Título>
 
 ## Contexto
@@ -181,7 +212,35 @@ O que foi decidido e por quê.
 O que muda, o que fica mais fácil, o que fica mais difícil.
 
 ## Features Afetadas
-Links para features que dependem desta decisão.
+Links [[feature-slug]] para features que dependem desta decisão.
+```
+
+---
+
+### Projeto (`type: "project"`, slug `overview`)
+
+Página única (`slug: "overview"`), a visão de mais alto nível da wiki:
+
+```markdown
+# Visão Geral do Projeto
+
+## Sobre o Projeto
+Nome, objetivo, domínio, stack principal.
+
+## Estado Atual
+Fase do projeto, features em andamento/concluídas/backlog.
+
+## Mapa de Áreas
+Áreas/módulos do sistema e suas features.
+
+## Requisitos de Alto Nível
+Resumo dos principais requisitos (links [[req-slug]]).
+
+## Arquitetura em Uma Frase
+Resumo da arquitetura. Detalhes ficam em páginas `type: "adr"`/`"architecture"`.
+
+## Entidades Principais
+Links [[entidade-slug]] para as entidades mais importantes.
 ```
 
 ---
@@ -193,41 +252,47 @@ Links para features que dependem desta decisão.
 Quando o humano adiciona um arquivo em `raw/` e pede para processar:
 
 1. Leia o arquivo fonte em `raw/`.
-2. Discuta com o humano os pontos principais.
+2. Chame `wiki_list_pages` para entender o que já existe e evitar duplicatas.
 3. Identifique: novos requisitos, novas features, novas entidades, decisões arquiteturais.
-4. Crie ou atualize as páginas relevantes na wiki.
-5. Atualize `wiki/index.md` com as páginas novas/modificadas.
-6. Atualize `wiki/overview.md` se o estado do projeto mudou.
-7. Registre no `wiki/log.md`:
+4. Apresente um resumo ao humano: o que será criado vs. atualizado. Aguarde confirmação.
+5. Para cada página nova/atualizada, chame `wiki_upsert_page(...)`.
+6. Se o estado do projeto mudou, chame `wiki_overview_update(...)`.
+7. Chame `wiki_log_append`:
    ```
-   ## [YYYY-MM-DD] ingest | <nome do arquivo>
-   Arquivos criados/atualizados: lista de paths. Resumo do que foi extraído.
+   type: "ingest"
+   summary: "<nome do arquivo>"
+   details: "Páginas criadas/atualizadas: <slugs>. Resumo do que foi extraído."
    ```
 
 ### 2. Nova Feature
 
 Quando o humano descreve uma feature nova:
 
-1. Verifique se já existe uma página próxima em `wiki/features/`.
-2. Crie `wiki/features/<slug>.md` usando o template acima.
-3. Vincule aos requisitos existentes ou crie novos requisitos se necessário.
-4. Vincule às entidades de domínio envolvidas.
-5. Se houver decisão arquitetural implícita, crie um ADR.
-6. Atualize `wiki/index.md` e `wiki/overview.md`.
-7. Registre no log.
+1. Chame `wiki_search` / `wiki_list_pages(type="feature")` para verificar se já existe algo similar.
+2. Determine o slug em `kebab-case`.
+3. Chame `wiki_upsert_page` com `type: "feature"`, `status: "backlog"`, seguindo a estrutura do `body` acima.
+4. Identifique requisitos relacionados (`wiki_search`/`wiki_list_pages(type="requirement")`):
+   - Vincule via `[[slug]]` no body da feature e em `metadata.requirements`.
+   - Atualize o requisito correspondente (`wiki_upsert_page`) adicionando a feature em `metadata.features` e na seção "Features que Implementam".
+   - Se nenhum requisito existente cobrir a motivação, crie um novo (`type: "requirement"`).
+5. Vincule entidades de domínio envolvidas (crie stubs com `type: "entity"` se necessário).
+6. Se houver decisão arquitetural implícita, crie uma página `type: "adr"`.
+7. Se a feature alterar o escopo do projeto, chame `wiki_overview_update`.
+8. Chame `wiki_log_append(type="feature", summary="<nome da feature>", details="...")`.
 
 ### 3. Query / Pergunta
 
 Quando o humano faz uma pergunta sobre o projeto:
 
-1. Leia `wiki/index.md` para encontrar páginas relevantes.
-2. Leia as páginas identificadas.
+1. Chame `wiki_search(query, mode="hybrid")` para encontrar páginas relevantes.
+2. Chame `wiki_get_page(slug)` para cada página relevante.
 3. Responda com citações (`[[feature-slug]]`, `[[req-slug]]`, etc.).
-4. Se a resposta for valiosa (comparação, análise, síntese), pergunte se deve salvar como nova página wiki.
-5. Registre no log:
+4. Se a resposta for valiosa (comparação, análise, síntese), pergunte se deve salvar como nova página (`wiki_upsert_page`).
+5. Chame `wiki_log_append`:
    ```
-   ## [YYYY-MM-DD] query | <resumo da pergunta>
-   Páginas consultadas: lista. Resposta salva em: <path ou "não salva">.
+   type: "query"
+   summary: "<resumo da pergunta>"
+   details: "Páginas consultadas: <slugs>. Resposta salva em: <slug ou 'não salva'>."
    ```
 
 ### 4. Discovery de Produto (Dual-Track)
@@ -238,43 +303,55 @@ Quando o humano quer idealizar uma nova feature ou validar uma hipótese:
 2. Explore o **espaço do problema** antes de qualquer solução (Fase 1–2).
 3. Construa a **hipótese de solução** junto com o humano (Fase 3).
 4. Defina um **experimento de validação** ou justifique dispensá-lo (Fase 4).
-5. Ao final, crie `wiki/features/<slug>.md` com `status: discovery`.
-6. Uma feature só avança para `status: backlog` quando a hipótese for validada.
-7. Registre no log:
+5. Ao final, chame `wiki_upsert_page` com `type: "feature"`, `status: "discovery"`.
+6. Uma feature só avança para `status: "backlog"` quando a hipótese for validada.
+7. Chame `wiki_log_append`:
    ```
-   ## [YYYY-MM-DD] discovery | <nome da feature>
-   Fase: em discovery | validado. Hipótese: <resumo>. Experimento: <como validar ou "dispensado — motivo">.
+   type: "discovery"
+   summary: "<nome da feature>"
+   details: "Fase: em discovery | validado. Hipótese: <resumo>. Experimento: <como validar ou 'dispensado — motivo'>."
    ```
 
 ### 5. Lint / Saúde da Wiki
 
 Periodicamente ou quando solicitado:
 
-1. Verifique páginas órfãs (sem links de entrada).
-2. Verifique features sem requisitos vinculados.
-3. Verifique requisitos sem features que os implementam.
-4. Verifique entidades mencionadas em texto mas sem página própria.
-5. Verifique features `in-progress` sem guia de implementação preenchida.
-6. Registre no log:
-   ```
-   ## [YYYY-MM-DD] lint
-   Problemas encontrados: lista. Ações tomadas: lista.
-   ```
+1. Chame `wiki_lint()` — retorna features sem requisitos vinculados, páginas órfãs, features `in-progress` sem guia de implementação e requisitos sem features que os implementam.
+2. Verifique manualmente o que o lint automático não detecta:
+   - **Entidades fantasma**: slugs `[[mencionados]]` em `body` mas sem página própria (`wiki_get_page` retorna não encontrado).
+   - **Links quebrados**: referências `[[slug]]` que não correspondem a nenhuma página existente.
+3. Reporte os problemas organizados por categoria: corrigidos automaticamente vs. que requerem ação humana.
+4. Corrija o que for possível via `wiki_upsert_page` (ex: criar stubs para entidades fantasma com nota `<!-- TODO: preencher -->`, ajustar links bidirecionais).
+5. Chame `wiki_log_append(type="lint", summary="...", details="Problemas encontrados: <lista>. Ações tomadas: <lista>.")`.
 
-### 6. Implementação / Desenvolvimento
+### 6. Consolidação de Sessão
+
+Ao final de uma sessão de trabalho, quando o humano usar `@wiki-consolidate`:
+
+1. Revise a conversa atual e identifique o que foi feito.
+2. Chame `wiki_log_append`:
+   ```
+   type: "session"
+   summary: "<resumo em uma linha>"
+   details: "Realizado: <lista>. Pendente: <lista, ou 'nenhum'>."
+   ```
+3. Se o estado do projeto mudou, chame `wiki_overview_update`.
+4. Chame `wiki_session_pending_clear()`.
+
+### 7. Implementação / Desenvolvimento
 
 Quando o humano pedir para implementar uma feature (ex: "implemente a home screen", "crie o componente X", "desenvolva o endpoint Y"):
 
-1. Identifique o slug da feature correspondente em `wiki/index.md`.
-2. Leia `wiki/features/<slug>.md` — absorva os critérios de aceite, comportamento esperado e guia de implementação.
-3. Para cada entidade listada em "Entidades Envolvidas", leia `wiki/entities/<slug>.md`.
-4. Para cada ADR listado em "Decisões Arquiteturais", leia `wiki/decisions/<slug>.md`.
-5. Para cada requisito listado em "Requisitos Relacionados", leia `wiki/requirements/<slug>.md`.
+1. Identifique o slug da feature via `wiki_search` ou `wiki_list_pages(type="feature")`.
+2. Chame `wiki_get_page(slug)` — absorva critérios de aceite, comportamento esperado e guia de implementação.
+3. Para cada slug em `metadata.requirements`, chame `wiki_get_page`.
+4. Para cada `[[entidade]]` em "Entidades Envolvidas", chame `wiki_get_page`.
+5. Para cada slug em `metadata.decisions` / "Decisões Arquiteturais", chame `wiki_get_page`.
 6. Somente então inicie a implementação, seguindo estritamente as orientações encontradas.
-7. Se durante a implementação surgir algo não documentado na wiki (ex: token de design não catalogado, regra de negócio nova), sinalize ao humano e pergunte se deve atualizar a wiki antes de continuar.
-8. Ao concluir, atualize o `status` da feature para `in-progress` ou `done` conforme o caso.
+7. Se surgir algo não documentado na wiki (ex: token de design não catalogado, regra de negócio nova), sinalize ao humano e pergunte se deve atualizar a wiki antes de continuar.
+8. Ao concluir, chame `wiki_upsert_page` atualizando `status` da feature para `in-progress` ou `done`.
 
-> **Regra:** nunca implemente uma feature sem antes ler a página wiki correspondente. O contexto da wiki tem precedência sobre suposições.
+> **Regra:** nunca implemente uma feature sem antes ler a página wiki correspondente (`wiki_get_page`). O contexto da wiki tem precedência sobre suposições.
 
 ---
 
@@ -285,15 +362,15 @@ Quando o humano pedir para implementar uma feature (ex: "implemente a home scree
   - Requisito: `req-multi-tenancy`, `req-offline-support`
   - Entidade: `user`, `project`, `invoice`
   - ADR: `adr-use-postgresql`, `adr-event-driven-arch`
-- **Links internos**: use `[[slug]]` no corpo do texto para referenciar outras páginas.
-- **Status de features**: sempre mantenha `status` atualizado no frontmatter.
+- **Links internos**: use `[[slug]]` no corpo do texto (`body`) para referenciar outras páginas — `wiki_upsert_page` extrai esses links automaticamente para a tabela `links`.
+- **Status de features**: sempre mantenha `status` atualizado.
 - **Datas**: sempre `YYYY-MM-DD`.
 
 ---
 
 ## Convenções de Links
 
-Ao mencionar qualquer entidade, feature, requisito ou ADR em qualquer página, crie um link `[[slug]]`. Isso permite que o índice e o grafo de links permaneçam úteis.
+Ao mencionar qualquer entidade, feature, requisito ou ADR em qualquer página, crie um link `[[slug]]` no `body`. Isso alimenta as tabelas `links`/`tags` e mantém `wiki_backlinks`, `wiki_deps` e `wiki_orphans` úteis.
 
 Exemplo: "Esta feature depende de [[user-authentication]] e usa a entidade [[invoice]]."
 
@@ -302,7 +379,8 @@ Exemplo: "Esta feature depende de [[user-authentication]] e usa a entidade [[inv
 ## Regras Gerais
 
 - Você nunca escreve em `raw/`. Apenas lê.
-- Você sempre atualiza `wiki/index.md` e `wiki/log.md` após qualquer operação.
+- Toda escrita na wiki passa por `wiki_upsert_page` / `wiki_delete_page` / `wiki_overview_update` — nunca edite `wiki/wiki.db` diretamente.
+- Você sempre registra no log (`wiki_log_append`) após qualquer operação relevante.
 - Quando uma claim em uma página contradiz uma informação nova, marque a contradição explicitamente antes de resolver.
-- Prefira atualizar páginas existentes a criar duplicatas. Verifique o índice antes de criar algo novo.
-- Mantenha `wiki/overview.md` como a visão de mais alto nível — alguém novo no projeto deve conseguir entender o escopo lendo só este arquivo.
+- Prefira atualizar páginas existentes a criar duplicatas. Use `wiki_search`/`wiki_list_pages` antes de criar algo novo.
+- Mantenha a página `overview` como a visão de mais alto nível — alguém novo no projeto deve conseguir entender o escopo lendo apenas ela (`wiki_overview_get`).

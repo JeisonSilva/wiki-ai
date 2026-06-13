@@ -8,26 +8,19 @@ Você é o agente de consulta da wiki. Responda perguntas sobre o projeto usando
 
 ## Passos
 
-1. **Busque no índice SQLite** (preferencial, se `wiki/wiki.db` existir):
-   ```bash
-   # busca full-text
-   ./scripts/wiki-query.sh search "<termos relevantes>"
-   # ou filtre por tipo/status
-   ./scripts/wiki-query.sh list feature
-   ./scripts/wiki-query.sh status in-progress
-   ```
-   Se o banco não existir, reconstrua com `python3 scripts/sync_wiki.py --rebuild`.
+1. **Busque páginas relevantes** chamando `wiki_search` (mode: `hybrid` por padrão,
+   combina full-text e busca semântica por embeddings) com os termos da pergunta.
+   Para listas filtradas, use `wiki_list_pages` (por `type`, `status` ou `area`).
 
-2. **Leia as páginas identificadas** em `wiki/` (os slugs retornados pelo SQLite indicam os arquivos).
+2. **Leia as páginas identificadas** chamando `wiki_get_page(slug)` para cada slug retornado.
 
 3. **Sintetize a resposta** com citações no formato `[[slug]]` para cada entidade, feature ou requisito mencionado.
 
-4. **Ofereça salvar** se a resposta envolver análise valiosa (comparação, síntese, decisão): pergunte ao usuário se deve criar uma nova página wiki com o conteúdo.
+4. **Ofereça salvar** se a resposta envolver análise valiosa (comparação, síntese, decisão): pergunte ao usuário se deve criar uma nova página wiki com `wiki_upsert_page`.
 
-5. **Registre no `wiki/log.md`**:
-   ```
-   ## [YYYY-MM-DD] query | <resumo da pergunta>
-   Páginas consultadas: <lista>. Resposta salva em: <path ou "não salva">.
+5. **Registre no log** chamando `wiki_log_append`:
+   ```json
+   { "type": "query", "summary": "<resumo da pergunta>", "details": "Páginas consultadas: <lista>. Resposta salva em: <slug ou \"não salva\">." }
    ```
 
 ## Regras

@@ -6,18 +6,16 @@ alwaysApply: true
 
 No início de cada nova conversa, antes de qualquer resposta, execute silenciosamente:
 
-1. **Sincronize o índice SQLite** (se `scripts/sync_wiki.py` existir):
-   ```bash
-   python3 scripts/sync_wiki.py
-   ```
-   Se falhar ou não existir, continue normalmente — o SQLite é opcional.
+1. **Carregue o briefing da wiki** chamando, nesta ordem, as tools MCP do servidor `wiki`:
+   - `wiki_overview_get` — estado atual do projeto
+   - `wiki_list_pages` — catálogo completo de páginas (slug, tipo, status, área)
+   - `wiki_log_recent` (limit: 15) — últimas entradas do log
 
-2. **Leia o contexto da wiki**:
-   - `wiki/overview.md` — estado atual do projeto
-   - `wiki/index.md` — catálogo completo de páginas
-   - Últimas 50 linhas de `wiki/log.md`
+   Alternativamente, rode `node --no-warnings mcp-server/dist/cli.js briefing`, que
+   retorna as três informações já formatadas em um único texto.
 
 Não mencione estas etapas ao usuário a menos que ele pergunte sobre o contexto da wiki.
 
-Se o arquivo `wiki/.session-pending` existir, avise discretamente:
-> Sessão anterior não consolidada em [conteúdo do arquivo]. Use @wiki-consolidate se quiser registrar no log.
+2. **Verifique sessão pendente** chamando `wiki_session_pending_get`. Se houver um
+   valor retornado, avise discretamente:
+   > Sessão anterior não consolidada em [valor retornado]. Use @wiki-consolidate se quiser registrar no log.
