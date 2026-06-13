@@ -2,29 +2,29 @@ Você é o agente de saúde da wiki. Verifique a integridade e consistência de 
 
 ## Passos
 
-1. **Leia `wiki/index.md`** e liste todas as páginas catalogadas.
+1. **Chame `wiki_lint`** para obter automaticamente:
+   - `orphan_pages` — páginas sem nenhum `[[link]]` apontando para elas
+   - `features_without_requirements` — features com `metadata.requirements` vazio ou ausente
+   - `requirements_without_features` — requisitos com `metadata.features` vazio ou ausente
+   - `in_progress_without_guide` — features `status: in-progress` com "Guia de Implementação" vazio
 
-2. **Verifique cada categoria de problema**:
-   - **Páginas órfãs**: páginas em `wiki/` sem nenhum `[[link]]` apontando para elas
-   - **Features sem requisitos**: arquivos em `wiki/features/` com `requirements: []` ou campo ausente
-   - **Requisitos sem features**: arquivos em `wiki/requirements/` com `features: []` ou campo ausente
-   - **Entidades fantasma**: slugs `[[mencionados]]` em páginas mas sem arquivo próprio em `wiki/entities/`
-   - **Links quebrados**: referências `[[slug]]` que não correspondem a nenhum arquivo existente na wiki
-   - **Features in-progress sem guia**: features com `status: in-progress` e seção "Guia de Implementação" vazia
+   Opcionalmente, chame `wiki_orphans` para o detalhe completo das páginas órfãs.
+
+2. **Verifique manualmente** o que o `wiki_lint` não detecta:
+   - **Entidades fantasma**: slugs `[[mencionados]]` em páginas (via `wiki_links`/busca textual) mas sem página própria (`wiki_get_page` retorna null)
+   - **Links quebrados**: referências `[[slug]]` que não correspondem a nenhuma página existente
 
 3. **Reporte os problemas** organizados por categoria, separando:
    - Problemas que serão corrigidos automaticamente
    - Problemas que requerem intervenção do humano
 
 4. **Corrija automaticamente**:
-   - Adicione entradas faltantes no `wiki/index.md`
-   - Crie stubs para entidades fantasma com aviso `<!-- TODO: preencher -->`
-   - Atualize links bidirecionais quando a correspondência for óbvia
+   - Crie stubs para entidades fantasma com `wiki_upsert_page(type: "entity", ...)`, marcando o `body` com `<!-- TODO: preencher -->`
+   - Atualize links bidirecionais (`metadata.requirements`/`metadata.features`) via `wiki_upsert_page` quando a correspondência for óbvia
 
-5. **Registre no `wiki/log.md`**:
-   ```
-   ## [YYYY-MM-DD] lint
-   Problemas encontrados: <lista>. Ações tomadas: <lista>.
+5. **Registre no log** chamando `wiki_log_append`:
+   ```json
+   { "type": "lint", "summary": "lint", "details": "Problemas encontrados: <lista>. Ações tomadas: <lista>." }
    ```
 
 ## Regras

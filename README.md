@@ -28,26 +28,46 @@ A plataforma possui 7 agents especializados. Cada um tem uma responsabilidade ú
 doc-wiki-ai/
 ├── CLAUDE.md                  ← schema da wiki (lido pelo LLM a cada sessão)
 ├── .cursorrules               ← schema da wiki para Cursor
+├── .mcp.json                   ← registra o servidor MCP "wiki" (Claude Code)
 ├── .claude/
-│   └── commands/              ← agents para Claude Code (slash commands)
+│   ├── commands/              ← agents para Claude Code (slash commands)
+│   └── hooks/                  ← briefing automático de sessão
 ├── .cursor/
-│   └── rules/                 ← agents para Cursor (MDC rules)
+│   └── rules/                  ← agents para Cursor (MDC rules)
+├── mcp-server/                 ← servidor MCP em TypeScript (única forma de ler/escrever a wiki)
+│   ├── src/                     ← código-fonte (tools wiki_*, embeddings, busca)
+│   └── dist/                    ← build (gerado por `npm run build`)
 ├── wiki/
-│   ├── index.md               ← catálogo de tudo na wiki
-│   ├── log.md                 ← histórico cronológico append-only
-│   ├── overview.md            ← visão geral do projeto
-│   ├── features/              ← uma página por feature
-│   ├── requirements/          ← requisitos funcionais e não-funcionais
-│   ├── entities/              ← entidades de domínio
-│   └── decisions/             ← ADRs (Architecture Decision Records)
+│   └── wiki.db                  ← única fonte de verdade: páginas, links, tags, log, embeddings (SQLite)
 └── raw/
-    ├── requirements/          ← seus documentos de requisitos
-    ├── meetings/              ← transcrições de reuniões
-    ├── research/              ← pesquisas e referências
-    └── assets/                ← imagens e diagramas
+    ├── requirements/           ← seus documentos de requisitos
+    ├── meetings/                ← transcrições de reuniões
+    ├── research/                ← pesquisas e referências
+    └── assets/                  ← imagens e diagramas
 ```
 
-> **Regra fundamental:** você nunca escreve em `wiki/` ou `raw/` manualmente. O LLM escreve em `wiki/`. Você coloca fontes em `raw/` para ele processar.
+> **Regra fundamental:** você nunca edita `wiki/wiki.db` ou `raw/` manualmente. O LLM lê e escreve a wiki exclusivamente através das tools `wiki_*` do servidor MCP. Você coloca fontes em `raw/` para ele processar.
+
+---
+
+## Setup do servidor MCP
+
+Antes da primeira sessão, instale e compile o servidor MCP:
+
+```bash
+cd mcp-server
+npm install
+npm run build
+```
+
+O Claude Code carrega o servidor automaticamente via `.mcp.json` (tools `wiki_*`). No
+Cursor, configure o mesmo servidor (`node mcp-server/dist/index.js`) como MCP server do
+projeto.
+
+A primeira chamada que gera embeddings tenta baixar o modelo `Xenova/all-MiniLM-L6-v2`
+(`@huggingface/transformers`). Se não houver acesso à internet, o servidor cai
+automaticamente para um embedding local por feature-hashing (`local-hash-v1`) — a busca
+semântica continua funcionando, apenas com qualidade reduzida.
 
 ---
 
@@ -69,7 +89,7 @@ Na sessão, diga:
 Leia o CLAUDE.md. Vamos iniciar um projeto chamado X. O objetivo é Y. A stack é Z.
 ```
 
-O `CLAUDE.md` é carregado automaticamente pelo Claude Code a cada sessão. O LLM preencherá `wiki/overview.md` e criará as primeiras páginas.
+O `CLAUDE.md` é carregado automaticamente pelo Claude Code a cada sessão. O LLM preencherá a página `overview` (via `wiki_overview_update`) e criará as primeiras páginas com `wiki_upsert_page`.
 
 #### Cursor
 
@@ -124,7 +144,7 @@ Use o `wiki-discovery` para explorar o problema **antes** de decidir o que const
 4. Experimento → como validar (ou justificativa para dispensar)
 ```
 
-Ao final, cria `wiki/features/<slug>.md` com `status: discovery`.
+Ao final, cria a página da feature via `wiki_upsert_page` com `status: discovery`.
 
 Quando a hipótese for validada, promova para `backlog` com:
 
@@ -159,7 +179,7 @@ O agent verifica duplicatas, cria a página com todos os vínculos (requisitos, 
 /wiki-query O que a wiki diz sobre autenticação?
 ```
 
-O agent lê `wiki/index.md`, navega pelas páginas relevantes e responde com citações `[[slug]]`. Se a resposta for valiosa (análise, síntese, comparação), oferece salvá-la como nova página.
+O agent busca com `wiki_search` (full-text + semântica) e `wiki_list_pages`, navega pelas páginas relevantes e responde com citações `[[slug]]`. Se a resposta for valiosa (análise, síntese, comparação), oferece salvá-la como nova página.
 
 ---
 
@@ -260,8 +280,13 @@ Os agents `pair` e `angular` são independentes da wiki — atuam na camada de c
 
 ## Dicas
 
-- Use [Obsidian](https://obsidian.md/) para navegar `wiki/` — é um vault válido. O graph view mostra as conexões entre páginas via `[[links]]`.
-- Filtre o log por tipo: `grep "^## " wiki/log.md | tail -20`
-- Features em `status: discovery` ficam em `wiki/features/` mas não entram em desenvolvimento até validadas.
-- O `wiki/index.md` é o ponto de entrada para qualquer consulta — o LLM sempre o lê primeiro.
+- Toda a wiki vive em `wiki/wiki.db` (SQLite) — use `wiki_search`, `wiki_list_pages` e
+  `wiki_get_page` para navegar; não edite o arquivo diretamente.
+- Filtre o log por tipo chamando `wiki_log_recent` e olhando o campo `type`
+  (`ingest`, `feature`, `query`, `lint`, `discovery`, `session`).
+- Features em `status: discovery` aparecem em `wiki_list_pages(type: "feature")` mas não
+  entram em desenvolvimento até validadas.
+- `wiki_list_pages` (sem filtros) é o ponto de entrada para qualquer consulta — o LLM
+  sempre o chama primeiro (ou roda `node mcp-server/dist/cli.js briefing`, que já inclui
+  o catálogo completo).
 - Ao usar Cursor, os agents com `globs` configurados (como `angular`) são sugeridos automaticamente quando você abre arquivos `.ts` / `.html`.

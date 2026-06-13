@@ -59,13 +59,9 @@ Se houver evidências suficientes ou o risco for explicitamente aceito, o discov
 
 ## Fase 5 — Registro na Wiki
 
-Ao final de uma sessão bem-sucedida, crie `wiki/features/<slug>.md` com:
+Ao final de uma sessão bem-sucedida, chame `wiki_upsert_page` com `type: "feature"` e `status: "discovery"`.
 
-```yaml
-status: discovery
-```
-
-Seções a preencher com os aprendizados da sessão:
+Seções do `body` a preencher com os aprendizados da sessão:
 - **Descrição** — o problema e a hipótese de solução
 - **Usuário-Alvo** — quem tem o problema
 - **Hipótese** — a sentença estruturada da Fase 3
@@ -76,10 +72,9 @@ Seções de delivery ficam como TODO:
 - Guia de Implementação
 - Critérios de Aceite detalhados
 
-Atualize `wiki/index.md` e registre no `wiki/log.md`:
-```
-## [YYYY-MM-DD] discovery | <nome da feature>
-Fase: em discovery | validado. Hipótese: <resumo>. Experimento: <como validar ou "dispensado — motivo">.
+Registre no log chamando `wiki_log_append`:
+```json
+{ "type": "discovery", "summary": "<nome da feature>", "details": "Fase: em discovery | validado. Hipótese: <resumo>. Experimento: <como validar ou \"dispensado — motivo\">." }
 ```
 
 ---

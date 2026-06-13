@@ -25,41 +25,19 @@ FLAG="/tmp/wiki-briefed-${SESSION_ID}"
 [ -f "$FLAG" ] && exit 0
 touch "$FLAG"
 
-WIKI="$(pwd)/wiki"
-[ -d "$WIKI" ] || exit 0
+CLI="$(pwd)/mcp-server/dist/cli.js"
 
-# Sincroniza markdown → SQLite (incremental, silencioso)
-if [ -f "$(pwd)/scripts/sync_wiki.py" ] && command -v python3 &>/dev/null; then
-  python3 "$(pwd)/scripts/sync_wiki.py" >/dev/null 2>&1 || true
+if [ ! -f "$CLI" ]; then
+  echo "=== WIKI MCP SERVER NÃO COMPILADO ==="
+  echo "Rode 'cd mcp-server && npm install && npm run build' para habilitar o briefing automático e as tools wiki_*."
+  exit 0
 fi
 
 {
   echo "=== BRIEFING AUTOMÁTICO DA WIKI ==="
   echo ""
-
-  if [ -f "$WIKI/overview.md" ]; then
-    cat "$WIKI/overview.md"
-    echo ""
-  fi
-
-  if [ -f "$WIKI/index.md" ]; then
-    cat "$WIKI/index.md"
-    echo ""
-  fi
-
-  if [ -f "$WIKI/log.md" ]; then
-    echo "### Últimas entradas do log"
-    tail -50 "$WIKI/log.md"
-    echo ""
-  fi
-
-  if [ -f "$WIKI/.session-pending" ]; then
-    echo ""
-    echo "> ⚠️  Última sessão registrada em: $(cat "$WIKI/.session-pending") ainda não foi consolidada no log."
-    echo "> Execute /wiki-consolidate se houver algo relevante a registrar."
-    echo ""
-  fi
-
+  node --no-warnings "$CLI" briefing 2>/dev/null || echo "(briefing indisponível: erro ao executar $CLI)"
+  echo ""
   echo "=== FIM DO BRIEFING ==="
 }
 
